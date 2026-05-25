@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Aula 01 - Fundamentos de Aprendizagem de Máquina</title><style>
+:root{--bg:#f6f7f9;--card:#ffffff;--text:#1f2937;--muted:#6b7280;--border:#d8dee9;--accent:#8b0000;--warn:#fff4cc;--warn-b:#eab308;--mem:#e0f2fe;--mem-b:#0284c7;--under:#ecfdf5;--under-b:#10b981;--prob:#fee2e2;--prob-b:#dc2626}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;line-height:1.6}.container{max-width:900px;margin:0 auto;padding:36px 22px 64px}header{background:linear-gradient(135deg,#7f0000,#b91c1c);color:white;border-radius:18px;padding:30px;margin-bottom:24px}header h1{margin:0 0 8px;font-size:2rem}header p{margin:0;opacity:.92}.card,section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin:18px 0;box-shadow:0 1px 2px rgba(0,0,0,.04)}h2{color:var(--accent);border-bottom:2px solid #f0d2d2;padding-bottom:6px;margin-top:0}h3{margin-top:20px;color:#374151}.tag{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.8rem;font-weight:700;margin-right:6px}.provavel{background:var(--prob);border-left:6px solid var(--prob-b)}.decorar{background:var(--mem);border-left:6px solid var(--mem-b)}.entender{background:var(--under);border-left:6px solid var(--under-b)}.box{border-radius:12px;padding:14px 16px;margin:12px 0}.question{border:1px solid var(--border);border-radius:12px;padding:16px;margin:12px 0;background:#fcfcfd}.answer{background:#f9fafb;border-left:4px solid #9ca3af;padding:12px;margin-top:10px;border-radius:8px}.formula{font-family:Consolas,Monaco,monospace;background:#111827;color:#f9fafb;border-radius:10px;padding:14px;overflow:auto}table{width:100%;border-collapse:collapse;margin:12px 0;background:white}th,td{border:1px solid var(--border);padding:10px;vertical-align:top}th{background:#f3f4f6;color:#111827}code,pre{font-family:Consolas,Monaco,monospace}pre{background:#111827;color:#f9fafb;padding:16px;border-radius:12px;overflow:auto}.small{color:var(--muted);font-size:.92rem}.toc a{display:block;padding:10px 12px;background:white;border:1px solid var(--border);border-radius:10px;margin:8px 0;text-decoration:none;color:#8b0000}.toc a:hover{background:#fff5f5}@media print{body{background:white}.container{max-width:100%;padding:0}header,section,.card{box-shadow:none;break-inside:avoid}.question{break-inside:avoid}a{color:inherit}}
+</style></head>
+<body><main class="container">
+<header>
+  <h1>Aula 01 - Fundamentos de Aprendizagem de Máquina</h1>
+  <p>Simulado e guia de estudo baseado nos slides RN-01-fundamentos-ML.</p>
+</header>
+
+<section>
+  <h2>1. Resumo essencial</h2>
+  <div class="box provavel"><strong>Provável de cair:</strong> definição de aprendizagem de máquina, tipos de aprendizagem, diferença entre indução/dedução/abdução, generalização, sobreajuste, regularização e dropout.</div>
+  <p>Aprendizagem de máquina é o campo que cria sistemas capazes de extrair conhecimento de dados para inferir, decidir ou prever sem programação explícita para cada caso. Nos slides, aparecem duas definições clássicas:</p>
+  <ul>
+    <li><strong>Arthur Samuel:</strong> computadores aprendem sem serem explicitamente programados com o conhecimento.</li>
+    <li><strong>Tom Mitchell:</strong> um programa aprende com experiência <strong>E</strong>, em tarefas <strong>T</strong>, com medida de desempenho <strong>P</strong>, se o desempenho em <strong>T</strong>, medido por <strong>P</strong>, melhora com <strong>E</strong>.</li>
+  </ul>
+  <p>A aula também apresenta o fluxo geral de um algoritmo de aprendizagem: problema, escolha dos dados, pré-processamento, conjunto de treinamento, seleção do algoritmo, treinamento, avaliação, ajuste de parâmetros e execução da tarefa.</p>
+</section>
+
+<section>
+  <h2>2. Conceitos principais que podem cair</h2>
+  <ul>
+    <li><strong>Aprendizagem indutiva:</strong> constrói um modelo geral para categorizar ou estimar saídas em todo o espaço de entrada.</li>
+    <li><strong>Aprendizagem transdutiva:</strong> faz previsões específicas para um conjunto-alvo de dados não rotulados.</li>
+    <li><strong>Raciocínio dedutivo:</strong> parte de regras gerais para conclusões específicas. A conclusão é necessariamente verdadeira se as premissas forem verdadeiras.</li>
+    <li><strong>Raciocínio indutivo:</strong> parte de casos específicos para formar uma regra geral. A conclusão é plausível, mas não garantida.</li>
+    <li><strong>Raciocínio abdutivo:</strong> parte de uma observação e busca a explicação mais simples e provável.</li>
+    <li><strong>Aprendizagem supervisionada:</strong> usa dados rotulados e ajusta o modelo comparando a saída obtida com a saída desejada.</li>
+    <li><strong>Aprendizagem não-supervisionada:</strong> usa dados sem rótulo e busca correlações, grupos ou características nos dados.</li>
+    <li><strong>Aprendizagem por reforço:</strong> um agente aprende ações que maximizam recompensa cumulativa.</li>
+    <li><strong>Aprendizagem semi-supervisionada:</strong> usa poucos dados rotulados e muitos dados não rotulados.</li>
+    <li><strong>Aprendizagem ativa:</strong> escolhe os exemplos mais informativos para serem rotulados manualmente.</li>
+    <li><strong>Generalização:</strong> capacidade de estimar corretamente entradas não vistas no treinamento.</li>
+    <li><strong>Sobreajuste:</strong> quando o modelo vai bem no treino, mas mal no teste, por aprender detalhes ou ruídos do conjunto de treinamento.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>3. Detalhes “bobos” que o professor pode cobrar</h2>
+  <div class="box decorar"><strong>Decorar:</strong> supervisionada = todos os dados rotulados; não-supervisionada = sem dados rotulados; semi-supervisionada = poucos rotulados e muitos não rotulados; reforço = retorno do ambiente; ativa = reduz rotulagem escolhendo dados mais informativos.</div>
+  <ul>
+    <li>Aprendizagem supervisionada aprende a distribuição <strong>p(y|x)</strong>.</li>
+    <li>Aprendizagem não-supervisionada aprende a distribuição <strong>p(x)</strong>.</li>
+    <li>Na aprendizagem supervisionada, a medida de erro é a diferença entre saída obtida e saída desejada.</li>
+    <li>Na aprendizagem não-supervisionada, não há “professor” fornecendo a saída desejada.</li>
+    <li>Na aprendizagem por reforço, há recompensa para bom resultado e penalização para mau resultado.</li>
+    <li>O erro de generalização é definido como o erro de aprendizagem, mas calculado em dados de validação.</li>
+    <li>Dropout pode descartar 20% das unidades de entrada e 50% das unidades escondidas como escolha frequentemente adequada.</li>
+    <li>Quanto menor a magnitude do peso, maior a tolerância a falhas.</li>
+    <li>Esparsidade e estabilidade são propriedades conflitantes: um algoritmo esparso não pode ser estável e vice-versa.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>4. Fórmulas importantes</h2>
+  <h3>Definição de aprendizagem indutiva</h3>
+  <div class="formula">Dado um conjunto de pares {xᵢ, f(xᵢ)}, determinar uma hipótese h(xᵢ) tal que h(xᵢ) ≈ f(xᵢ), ∀i.</div>
+  <p><strong>xᵢ:</strong> entrada ou estímulo. <strong>f(xᵢ):</strong> saída real/desejada. <strong>h(xᵢ):</strong> hipótese aprendida pelo modelo. <strong>≈:</strong> aproximação, pois o modelo tenta imitar a função real.</p>
+
+  <h3>Regularização</h3>
+  <div class="formula">E_T = E_A + λE_C</div>
+  <p><strong>E_T:</strong> erro total. <strong>E_A:</strong> erro de aprendizagem/ajuste aos dados. <strong>E_C:</strong> termo de complexidade/restrição. <strong>λ:</strong> peso da regularização, controlando o quanto a complexidade será penalizada.</p>
+  <div class="box entender"><strong>Entender:</strong> regularização adiciona uma punição à complexidade. A ideia é evitar modelos muito complexos que memorizam o treinamento e generalizam mal.</div>
+
+  <h3>Regularização L1 e L2</h3>
+  <table>
+    <tr><th>Tipo</th><th>Ideia</th><th>Efeito esperado</th></tr>
+    <tr><td>L1</td><td>Penaliza a soma dos valores absolutos dos pesos.</td><td>Tende a gerar pesos zerados, favorecendo esparsidade.</td></tr>
+    <tr><td>L2</td><td>Penaliza a soma dos quadrados dos pesos.</td><td>Tende a reduzir pesos grandes, favorecendo soluções mais suaves/estáveis.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>5. Funções de ativação</h2>
+  <p>Esta aula não apresenta uma seção específica com fórmulas de funções de ativação. Portanto, para este arquivo, não há tabela de funções de ativação a memorizar. Se elas aparecerem em outra aula, o simulado correspondente deve trazer fórmula, intervalo, vantagem, desvantagem e uso.</p>
+</section>
+
+<section>
+  <h2>6. Comparações importantes</h2>
+  <h3>Indutiva x Transdutiva</h3>
+  <table>
+    <tr><th>Critério</th><th>Aprendizagem indutiva</th><th>Aprendizagem transdutiva</th></tr>
+    <tr><td>Objetivo</td><td>Aprender um modelo geral para todo o espaço de entrada.</td><td>Rotular/prever casos específicos de um conjunto-alvo.</td></tr>
+    <tr><td>Generalização</td><td>Generaliza para exemplos além do treinamento.</td><td>Faz previsões específicas para casos observados.</td></tr>
+    <tr><td>Ideia central</td><td>Aprender uma hipótese geral.</td><td>Usar observações adicionais para novos casos específicos.</td></tr>
+  </table>
+
+  <h3>Dedução x Indução x Abdução</h3>
+  <table>
+    <tr><th>Raciocínio</th><th>Direção</th><th>Tipo de verdade</th><th>Exemplo de resposta de prova</th></tr>
+    <tr><td>Dedutivo</td><td>Regra geral → caso específico</td><td>Necessariamente verdadeira</td><td>Se P implica Q e P é verdadeiro, então Q deve ser verdadeiro.</td></tr>
+    <tr><td>Indutivo</td><td>Casos específicos → regra geral</td><td>Plausivelmente verdadeira</td><td>A partir de exemplos, forma-se uma hipótese que explica a maioria dos casos.</td></tr>
+    <tr><td>Abdutivo</td><td>Observação → melhor explicação</td><td>Hipoteticamente plausível</td><td>Escolhe-se provisoriamente a hipótese mais simples/provável para explicar uma observação.</td></tr>
+  </table>
+
+  <h3>Tipos de aprendizagem</h3>
+  <table>
+    <tr><th>Tipo</th><th>Dados</th><th>Objetivo/uso típico</th></tr>
+    <tr><td>Supervisionada</td><td>Rotulados</td><td>Classificação, regressão, aproximação, controle, modelagem e identificação.</td></tr>
+    <tr><td>Não-supervisionada</td><td>Não rotulados</td><td>Agrupamento, quantização vetorial, extração de características e análise de dados.</td></tr>
+    <tr><td>Reforço</td><td>Retorno do ambiente</td><td>Controle e inteligência artificial.</td></tr>
+    <tr><td>Semi-supervisionada</td><td>Poucos rotulados + muitos não rotulados</td><td>Melhorar generalização usando dados sem rótulo.</td></tr>
+    <tr><td>Ativa</td><td>Seleciona amostras para rotulagem</td><td>Reduzir o custo de rotular dados, escolhendo exemplos informativos.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>7. Possíveis questões de prova + respostas modelo</h2>
+  <div class="question"><strong>Questão 1.</strong> Defina aprendizagem de máquina usando as ideias de Samuel e Mitchell.
+    <div class="answer"><strong>Resposta modelo:</strong> Aprendizagem de máquina é o campo que permite a computadores aprenderem a partir da experiência, sem serem explicitamente programados com todo o conhecimento. Pela definição de Mitchell, um programa aprende com experiência E, em relação a tarefas T e medida de desempenho P, se seu desempenho em T, medido por P, melhora com E.</div>
+  </div>
+  <div class="question"><strong>Questão 2.</strong> Diferencie aprendizagem supervisionada e não-supervisionada.
+    <div class="answer"><strong>Resposta modelo:</strong> Na aprendizagem supervisionada, o modelo recebe exemplos rotulados, isto é, pares entrada-saída, e ajusta seus parâmetros comparando a saída obtida com a saída desejada. Na aprendizagem não-supervisionada, não há saída desejada; o modelo usa apenas os dados de entrada para encontrar correlações, grupos ou características significativas.</div>
+  </div>
+  <div class="question"><strong>Questão 3.</strong> Explique o que é sobreajuste e como critério de parada, regularização e dropout ajudam na generalização.
+    <div class="answer"><strong>Resposta modelo:</strong> Sobreajuste ocorre quando o modelo aprende demais o conjunto de treinamento, incluindo ruídos ou detalhes específicos, ficando preciso no treino e impreciso no teste. O critério de parada interrompe o treinamento antes que o modelo aprenda ruído de alta frequência. A regularização penaliza modelos complexos. O dropout descarta aleatoriamente neurônios e conexões durante o treinamento, reduzindo co-adaptações frágeis.</div>
+  </div>
+  <div class="question"><strong>Questão 4.</strong> Compare aprendizagem indutiva e transdutiva.
+    <div class="answer"><strong>Resposta modelo:</strong> A aprendizagem indutiva busca aprender um modelo geral capaz de prever saídas para exemplos além do conjunto de treinamento. Já a aprendizagem transdutiva busca prever rótulos ou funções específicas para um conjunto-alvo de casos não rotulados, usando observações adicionais relacionadas a esses novos casos.</div>
+  </div>
+  <div class="question"><strong>Questão 5.</strong> Explique dedução, indução e abdução no raciocínio científico.
+    <div class="answer"><strong>Resposta modelo:</strong> Dedução parte de regras gerais para conclusões específicas e gera conclusão necessariamente verdadeira quando as premissas são verdadeiras. Indução parte de observações específicas para formar regras gerais, sendo plausível, mas incerta. Abdução parte de uma observação e busca a explicação mais simples e provável, adotando uma hipótese provisória.</div>
+  </div>
+</section>
+
+<section>
+  <h2>8. Pseudocódigo</h2>
+  <p>A aula apresenta um esquema geral de algoritmo de aprendizagem de máquina. Abaixo está o pseudocódigo em português, fiel ao fluxo do slide.</p>
+  <pre>INÍCIO
+  Definir o problema a ser resolvido
+  Escolher os dados relevantes para o problema
+  Pré-processar os dados
+  Separar ou construir o conjunto de treinamento
+  Selecionar o algoritmo de aprendizagem
+  Treinar o modelo usando o conjunto de treinamento
+  Avaliar o modelo com testes de avaliação
+  ENQUANTO o resultado não estiver adequado FAÇA
+      Ajustar parâmetros
+      Treinar novamente o modelo
+      Avaliar novamente o modelo
+  FIM ENQUANTO
+  Executar a tarefa com o modelo ajustado
+FIM</pre>
+  <h3>Explicação linha por linha</h3>
+  <ul>
+    <li><strong>Definir o problema:</strong> identifica qual tarefa será resolvida, como classificação, predição ou reconhecimento de padrões.</li>
+    <li><strong>Escolher os dados:</strong> seleciona dados úteis para representar o problema.</li>
+    <li><strong>Pré-processar:</strong> prepara os dados, podendo envolver limpeza, transformação ou organização.</li>
+    <li><strong>Conjunto de treinamento:</strong> define os exemplos usados para ajustar o modelo.</li>
+    <li><strong>Selecionar algoritmo:</strong> escolhe o método de aprendizagem adequado.</li>
+    <li><strong>Treinar:</strong> ajusta os parâmetros do modelo a partir dos dados.</li>
+    <li><strong>Avaliar:</strong> verifica o desempenho com testes de avaliação.</li>
+    <li><strong>Ajustar parâmetros:</strong> se o desempenho não for adequado, altera parâmetros e repete treinamento/avaliação.</li>
+    <li><strong>Executar tarefa:</strong> usa o modelo final para inferir, decidir ou prever.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>9. Mini-simulado</h2>
+  <div class="question"><strong>1. Conceitual.</strong> O que significa dizer que aprendizagem de máquina extrai conhecimento de dados?</div>
+  <div class="question"><strong>2. Conceitual.</strong> Explique por que aprendizagem indutiva envolve incerteza.</div>
+  <div class="question"><strong>3. Conceitual.</strong> O que é erro de generalização?</div>
+  <div class="question"><strong>4. Comparação.</strong> Compare aprendizagem supervisionada, não-supervisionada e por reforço.</div>
+  <div class="question"><strong>5. Algoritmo.</strong> Escreva o pseudocódigo geral de um processo de aprendizagem de máquina, incluindo avaliação e ajuste de parâmetros.</div>
+</section>
+
+<section>
+  <h2>10. Gabarito comentado</h2>
+  <div class="answer"><strong>1.</strong> Significa que o sistema usa exemplos para encontrar padrões, relações ou regularidades que permitem inferir, decidir ou prever sem intervenção humana direta em cada caso.</div>
+  <div class="answer"><strong>2.</strong> Porque ela generaliza a partir de casos observados. Como os exemplos de treinamento são finitos, a hipótese aprendida pode não representar perfeitamente todos os casos possíveis.</div>
+  <div class="answer"><strong>3.</strong> É o erro calculado em dados não usados no treinamento, normalmente um conjunto de validação ou teste. Mede a capacidade do modelo de funcionar em exemplos novos.</div>
+  <div class="answer"><strong>4.</strong> Supervisionada usa dados rotulados e erro entre saída obtida e desejada; não-supervisionada não usa rótulos e busca estruturas nos dados; reforço usa recompensa ou penalização do ambiente para orientar ações.</div>
+  <div class="answer"><strong>5.</strong> O pseudocódigo deve conter: definir problema, escolher dados, pré-processar, construir conjunto de treinamento, selecionar algoritmo, treinar, avaliar, ajustar parâmetros se necessário e executar a tarefa.</div>
+</section>
+
+<section>
+  <h2>11. Checklist final de revisão</h2>
+  <ul>
+    <li>Sei explicar Samuel e Mitchell.</li>
+    <li>Sei comparar supervisionada, não-supervisionada, reforço, semi-supervisionada e ativa.</li>
+    <li>Sei diferenciar indução, dedução e abdução.</li>
+    <li>Sei explicar sobreajuste, generalização, critério de parada, regularização e dropout.</li>
+    <li>Sei escrever o fluxo geral de aprendizagem em pseudocódigo.</li>
+  </ul>
+</section>
+</main></body></html>

@@ -1,0 +1,88 @@
+<!doctype html><html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Aula 11 — Mapas Auto-organizáveis / SOM</title><style>
+:root{--bg:#f7f7f4;--paper:#fff;--ink:#1f2937;--muted:#667085;--brand:#8b0000;--brand2:#b42318;--border:#e5e7eb;--fall:#fff3cd;--dec:#e9f5ff;--ent:#eef8ee;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.6}.container{max-width:900px;margin:0 auto;padding:32px 18px 64px}.paper{background:var(--paper);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 8px 24px rgba(0,0,0,.06)}h1{font-size:2.1rem;color:var(--brand);line-height:1.15;margin:0 0 8px}h2{color:var(--brand);border-top:2px solid var(--border);padding-top:24px;margin-top:34px}h3{color:#344054;margin-top:22px}.meta{color:var(--muted);margin-bottom:22px}.tag{display:inline-block;background:#fee4e2;color:#912018;padding:4px 9px;border-radius:999px;font-weight:bold;font-size:.82rem;margin:4px 4px 4px 0}.card{border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 0;background:#fff}.likely{border-left:6px solid #f79009;background:var(--fall)}.memorize{border-left:6px solid #1570ef;background:var(--dec)}.understand{border-left:6px solid #12b76a;background:var(--ent)}.question{border-left:5px solid var(--brand2);background:#fffafa}.answer{background:#f9fafb;border-left:4px solid #98a2b3;padding:12px 14px;border-radius:8px;margin-top:10px}table{width:100%;border-collapse:collapse;margin:14px 0;overflow:auto}th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{background:#f2f4f7}code,pre{background:#f2f4f7;border-radius:8px}pre{padding:14px;white-space:pre-wrap;overflow:auto}.toc{background:#f9fafb;border:1px solid var(--border);padding:16px;border-radius:12px}.toc a{color:var(--brand);text-decoration:none}.formula{font-family:Georgia,serif;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin:10px 0}.small{font-size:.92rem;color:var(--muted)}.lesson-list{list-style:none;padding:0}.lesson-list li{background:#fff;border:1px solid var(--border);border-radius:14px;margin:12px 0;padding:16px}.lesson-list a{font-size:1.1rem;font-weight:bold;color:var(--brand);text-decoration:none}.status{display:inline-block;font-size:.8rem;background:#ecfdf3;color:#027a48;border-radius:999px;padding:3px 8px;margin-left:6px}@media print{body{background:white}.container{padding:0}.paper{box-shadow:none;border:0;border-radius:0}a{color:inherit;text-decoration:none}.card{break-inside:avoid}h2{break-after:avoid}}
+</style></head><body><main class="container"><section class="paper"><h1>Aula 11 — Mapas Auto-organizáveis / SOM</h1><p class="meta">Estudo e simulado discursivo baseado no slide RN-11-SOM.</p>
+<div class="toc"><strong>Roteiro de estudo:</strong><br>
+<a href="#resumo">Resumo</a> · <a href="#conceitos">Conceitos principais</a> · <a href="#formulas">Fórmulas</a> · <a href="#comparacoes">Comparações</a> · <a href="#pseudocodigo">Pseudocódigo</a> · <a href="#questoes">Questões</a> · <a href="#simulado">Mini-simulado</a> · <a href="#gabarito">Gabarito</a></div>
+
+<h2 id="resumo">1. Resumo essencial</h2>
+<div class="card likely"><strong>Provável de cair:</strong> SOM é uma técnica de aprendizagem não supervisionada que transforma entradas de dimensão arbitrária em um mapa discreto, geralmente 1D ou 2D, preservando relações topológicas entre os dados.</div>
+<p>Mapas Auto-organizáveis, ou <strong>SOM</strong>, buscam descobrir padrões em dados sem rótulos. A ideia central é representar dados de alta dimensão em um mapa de baixa dimensão, mantendo a proximidade: entradas parecidas devem ativar neurônios próximos no mapa.</p>
+<p>O funcionamento combina três operações: <strong>competição</strong>, para escolher o neurônio vencedor; <strong>adaptação</strong>, para aproximar os pesos do vencedor ao vetor de entrada; e <strong>cooperação</strong>, para também ajustar vizinhos topológicos do vencedor.</p>
+
+<h2 id="conceitos">2. Conceitos principais que podem cair</h2>
+<div class="card understand"><strong>Entender:</strong> SOM não aprende com rótulos. Ele aprende a organizar protótipos no espaço de entrada de modo que o mapa final reflita a estrutura dos dados.</div>
+<ul>
+<li><strong>Aprendizagem não supervisionada:</strong> busca características significativas sem saída desejada.</li>
+<li><strong>Auto-organização:</strong> surge de regras locais de competição, cooperação e adaptação.</li>
+<li><strong>Quantização Vetorial:</strong> SOM posiciona vetores protótipos no espaço de entrada e os aproxima dos grupos de dados.</li>
+<li><strong>BMU / unidade vencedora:</strong> unidade cujo vetor de pesos está mais próximo do vetor de entrada.</li>
+<li><strong>Vizinhança topológica:</strong> conjunto de neurônios ao redor do vencedor que também sofrem atualização.</li>
+<li><strong>Ordenamento topológico:</strong> neurônios próximos no mapa representam regiões semelhantes do espaço de entrada.</li>
+<li><strong>Casamento de densidades:</strong> regiões mais densas do espaço de entrada tendem a ocupar regiões maiores do mapa.</li>
+</ul>
+
+<h2>3. Detalhes “bobos” que o professor pode cobrar</h2>
+<div class="card memorize"><strong>Decorar:</strong> Kohonen propôs o SOM em 1982. A estrutura típica possui camada de entrada e camada de saída, frequentemente em gradil bidimensional.</div>
+<ul>
+<li>A camada de entrada apenas propaga o vetor de características.</li>
+<li>Cada nó de saída possui um vetor de pesos com a mesma dimensão da entrada.</li>
+<li>A escolha do vencedor pode ser vista como menor distância euclidiana entre entrada e pesos.</li>
+<li>A vizinhança geralmente diminui com o tempo.</li>
+<li>A taxa de aprendizagem também diminui com o tempo.</li>
+<li>A fase de ordenamento costuma ocorrer primeiro; a fase de convergência faz sintonia fina.</li>
+<li>Unidades mortas podem aparecer no mapa de cores apresentado nos slides.</li>
+</ul>
+
+<h2 id="formulas">4. Fórmulas importantes</h2>
+<div class="formula"><strong>Escolha do vencedor:</strong><br>v(x) = arg min<sub>j</sub> ||x − w<sub>j</sub>||</div>
+<p><strong>x</strong> é o vetor de entrada; <strong>w<sub>j</sub></strong> é o vetor de pesos do neurônio j; <strong>v(x)</strong> é o neurônio vencedor. A unidade vencedora é a que tem pesos mais próximos da entrada.</p>
+<div class="formula"><strong>Atualização dos pesos:</strong><br>w<sub>j</sub>(n+1) = w<sub>j</sub>(n) + η(n) · h<sub>j,v(x)</sub>(n) · [x − w<sub>j</sub>(n)]</div>
+<p><strong>η(n)</strong> é a taxa de aprendizagem no tempo n; <strong>h<sub>j,v</sub>(n)</strong> é a função de vizinhança centrada no vencedor; <strong>[x − w<sub>j</sub>]</strong> indica a direção em que os pesos devem se mover.</p>
+<div class="formula"><strong>Taxa de aprendizagem decrescente:</strong><br>η(n) = η<sub>0</sub> exp(−n/τ<sub>2</sub>)</div>
+<p>Serve para fazer grandes ajustes no começo e ajustes menores no final.</p>
+<div class="formula"><strong>Vizinhança gaussiana:</strong><br>h<sub>j,v(x)</sub>(n) = exp(−d²<sub>j,v</sub> / 2σ²(n))<br>σ(n) = σ<sub>0</sub> exp(−n/τ<sub>1</sub>)</div>
+<p><strong>d<sub>j,v</sub></strong> é a distância lateral no mapa entre o neurônio j e o vencedor v. Quanto mais distante do vencedor, menor a atualização.</p>
+
+<h2 id="comparacoes">5. Comparações importantes</h2>
+<table><tr><th>Conceito</th><th>Ideia</th><th>Como responder em prova</th></tr>
+<tr><td>Competição</td><td>Escolha do neurônio mais parecido com a entrada.</td><td>Define a BMU pelo menor erro/distância.</td></tr>
+<tr><td>Adaptação</td><td>Atualização dos pesos.</td><td>Move o vencedor e vizinhos em direção ao vetor de entrada.</td></tr>
+<tr><td>Cooperação</td><td>Atualização também dos vizinhos.</td><td>Preserva a organização topológica do mapa.</td></tr>
+<tr><td>Ordenamento</td><td>Fase inicial.</td><td>Grandes mudanças; forma a organização global do mapa.</td></tr>
+<tr><td>Convergência</td><td>Fase final.</td><td>Sintonia fina; taxa e vizinhança menores.</td></tr></table>
+<table><tr><th>SOM</th><th>PCA</th></tr><tr><td>Mapeamento adaptativo, competitivo e geralmente não linear.</td><td>Transformação linear para direções de maior variância.</td></tr><tr><td>Preserva vizinhança topológica em um mapa discreto.</td><td>Projeta dados em componentes principais ordenadas por variância.</td></tr><tr><td>Útil para visualização, agrupamento e quantização.</td><td>Útil para redução dimensional, compressão e remoção de ruído.</td></tr></table>
+
+<h2 id="pseudocodigo">6. Pseudocódigo do algoritmo SOM</h2>
+<pre>Entrada: conjunto de vetores de treinamento X, mapa de neurônios, taxa inicial η0, raio inicial σ0.
+Inicialize aleatoriamente os vetores de pesos dos neurônios.
+Para cada época n:
+    Escolha/apresente um vetor de entrada x.
+    Para cada neurônio j do mapa:
+        Calcule a distância entre x e o vetor de pesos wj.
+    Escolha o neurônio vencedor v com menor distância.
+    Calcule a taxa de aprendizagem η(n).
+    Calcule o raio/vizinhança σ(n).
+    Para cada neurônio j do mapa:
+        Calcule a função de vizinhança h(j,v).
+        Atualize wj aproximando-o de x, ponderado por η(n) e h(j,v).
+Fim.</pre>
+<h3>Explicação linha por linha</h3>
+<ul><li><strong>Inicialização:</strong> define protótipos iniciais antes do mapa se organizar.</li><li><strong>Apresentação de x:</strong> fornece um padrão sem rótulo.</li><li><strong>Distância:</strong> mede semelhança entre entrada e cada neurônio.</li><li><strong>Vencedor:</strong> representa a região do mapa mais próxima da entrada.</li><li><strong>η(n) e σ(n):</strong> diminuem com o tempo para estabilizar o aprendizado.</li><li><strong>Atualização:</strong> vencedor e vizinhos se movem em direção ao dado, mantendo ordenamento topológico.</li></ul>
+
+<h2 id="questoes">7. Possíveis questões de prova e respostas modelo</h2>
+<div class="card question"><strong>Q1.</strong> O que é um mapa auto-organizável?<div class="answer">É uma rede não supervisionada que transforma entradas de dimensão arbitrária em um mapa discreto, geralmente de uma ou duas dimensões, preservando relações topológicas entre os dados. Assim, entradas semelhantes tendem a ativar neurônios próximos no mapa.</div></div>
+<div class="card question"><strong>Q2.</strong> Explique competição, adaptação e cooperação em SOM.<div class="answer">Competição é a escolha do neurônio vencedor, geralmente o mais próximo do vetor de entrada. Adaptação é a atualização dos pesos do vencedor em direção à entrada. Cooperação é a atualização também dos neurônios vizinhos, permitindo preservar a organização topológica.</div></div>
+<div class="card question"><strong>Q3.</strong> Por que a vizinhança diminui ao longo do tempo?<div class="answer">No começo, uma vizinhança maior permite organizar globalmente o mapa. Com o tempo, a vizinhança diminui para permitir ajustes locais e sintonia fina, evitando oscilações grandes no final do treinamento.</div></div>
+<div class="card question"><strong>Q4.</strong> Cite limitações do SOM.<div class="answer">A estrutura precisa ser pré-definida, com número fixo de nodos e conexões. Há poucos tipos de topologia e vizinhança. O uso da distância euclidiana pode atribuir a mesma importância a todas as dimensões e perder discriminação em alta dimensão. Além disso, o processamento é restrito a uma camada, o que dificulta perceber diferenças intracategóricas sutis.</div></div>
+
+<h2 id="simulado">8. Mini-simulado</h2>
+<div class="card question"><strong>1.</strong> Defina aprendizagem não supervisionada no contexto do SOM.</div>
+<div class="card question"><strong>2.</strong> O que é a BMU/unidade vencedora?</div>
+<div class="card question"><strong>3.</strong> Por que SOM preserva topologia?</div>
+<div class="card question"><strong>4.</strong> Compare ordenamento e convergência no treinamento do SOM.</div>
+<div class="card question"><strong>5.</strong> Escreva um pseudocódigo resumido do treinamento do SOM.</div>
+
+<h2 id="gabarito">9. Gabarito comentado</h2>
+<ol><li>É o aprendizado a partir de entradas sem rótulos, buscando padrões, agrupamentos ou estrutura interna.</li><li>É o neurônio cujo vetor de pesos está mais próximo da entrada apresentada.</li><li>Porque atualiza não apenas o vencedor, mas também seus vizinhos topológicos; isso mantém entradas semelhantes próximas no mapa.</li><li>Ordenamento faz a organização global inicial com maior taxa e vizinhança; convergência realiza ajustes finos com vizinhança pequena e taxa menor.</li><li>Inicializar pesos; apresentar entrada; calcular distâncias; escolher vencedor; calcular vizinhança e taxa; atualizar vencedor e vizinhos; repetir até estabilizar.</li></ol>
+</section></main></body></html>

@@ -1,0 +1,97 @@
+<!doctype html><html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Aula 12 — Análise de Componentes Principais / PCA</title><style>
+:root{--bg:#f7f7f4;--paper:#fff;--ink:#1f2937;--muted:#667085;--brand:#8b0000;--brand2:#b42318;--border:#e5e7eb;--fall:#fff3cd;--dec:#e9f5ff;--ent:#eef8ee;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.6}.container{max-width:900px;margin:0 auto;padding:32px 18px 64px}.paper{background:var(--paper);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 8px 24px rgba(0,0,0,.06)}h1{font-size:2.1rem;color:var(--brand);line-height:1.15;margin:0 0 8px}h2{color:var(--brand);border-top:2px solid var(--border);padding-top:24px;margin-top:34px}h3{color:#344054;margin-top:22px}.meta{color:var(--muted);margin-bottom:22px}.tag{display:inline-block;background:#fee4e2;color:#912018;padding:4px 9px;border-radius:999px;font-weight:bold;font-size:.82rem;margin:4px 4px 4px 0}.card{border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 0;background:#fff}.likely{border-left:6px solid #f79009;background:var(--fall)}.memorize{border-left:6px solid #1570ef;background:var(--dec)}.understand{border-left:6px solid #12b76a;background:var(--ent)}.question{border-left:5px solid var(--brand2);background:#fffafa}.answer{background:#f9fafb;border-left:4px solid #98a2b3;padding:12px 14px;border-radius:8px;margin-top:10px}table{width:100%;border-collapse:collapse;margin:14px 0;overflow:auto}th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{background:#f2f4f7}code,pre{background:#f2f4f7;border-radius:8px}pre{padding:14px;white-space:pre-wrap;overflow:auto}.toc{background:#f9fafb;border:1px solid var(--border);padding:16px;border-radius:12px}.toc a{color:var(--brand);text-decoration:none}.formula{font-family:Georgia,serif;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin:10px 0}.small{font-size:.92rem;color:var(--muted)}.lesson-list{list-style:none;padding:0}.lesson-list li{background:#fff;border:1px solid var(--border);border-radius:14px;margin:12px 0;padding:16px}.lesson-list a{font-size:1.1rem;font-weight:bold;color:var(--brand);text-decoration:none}.status{display:inline-block;font-size:.8rem;background:#ecfdf3;color:#027a48;border-radius:999px;padding:3px 8px;margin-left:6px}@media print{body{background:white}.container{padding:0}.paper{box-shadow:none;border:0;border-radius:0}a{color:inherit;text-decoration:none}.card{break-inside:avoid}h2{break-after:avoid}}
+</style></head><body><main class="container"><section class="paper"><h1>Aula 12 — Análise de Componentes Principais / PCA</h1><p class="meta">Estudo e simulado discursivo baseado no slide RN-12-PCA.</p>
+<div class="toc"><strong>Roteiro de estudo:</strong><br>
+<a href="#resumo">Resumo</a> · <a href="#conceitos">Conceitos</a> · <a href="#formulas">Fórmulas</a> · <a href="#comparacoes">Comparações</a> · <a href="#pseudocodigo">Pseudocódigo</a> · <a href="#questoes">Questões</a> · <a href="#simulado">Mini-simulado</a> · <a href="#gabarito">Gabarito</a></div>
+
+<h2 id="resumo">1. Resumo essencial</h2>
+<div class="card likely"><strong>Provável de cair:</strong> PCA é uma transformação linear que muda o sistema de coordenadas dos dados para eixos onde a maior variância aparece na primeira componente principal, a segunda maior na segunda, e assim por diante.</div>
+<p>A Análise de Componentes Principais identifica padrões nos dados, destacando similaridades e diferenças. Ela também permite compressão e redução de dimensionalidade, preservando a maior parte da informação intrínseca.</p>
+<p>O método mais importante dos slides é o <strong>método da covariância</strong>: organizar os dados, remover a média, calcular a matriz de covariância, obter autovalores/autovetores, ordenar os autovetores por autovalor e projetar os dados na nova base.</p>
+
+<h2 id="conceitos">2. Conceitos principais que podem cair</h2>
+<ul>
+<li><strong>Redução de dimensionalidade:</strong> transformar dados de alta dimensão em menos variáveis.</li>
+<li><strong>Componente principal:</strong> direção/eixo em que a projeção dos dados tem maior variância.</li>
+<li><strong>Matriz de covariância:</strong> mede como variáveis variam juntas.</li>
+<li><strong>Autovetor:</strong> direção que não muda sob uma transformação linear.</li>
+<li><strong>Autovalor:</strong> escalar associado ao autovetor; no PCA representa quanta variância/energia há naquela direção.</li>
+<li><strong>KLT/Hotelling:</strong> transformação que cria uma base ortogonal para representar os dados.</li>
+<li><strong>Kernel PCA:</strong> versão não linear que mapeia dados para um espaço de características usando kernel e aplica PCA linear nesse espaço.</li>
+<li><strong>GHA e APEX:</strong> abordagens neurais/auto-organizáveis para extração de componentes principais.</li>
+</ul>
+
+<h2>3. Detalhes “bobos” que o professor pode cobrar</h2>
+<div class="card memorize"><strong>Decorar:</strong> PCA maximiza a variância dos dados projetados e minimiza o erro médio quadrado entre os dados e suas projeções.</div>
+<ul><li>A covariância positiva indica que duas dimensões crescem ou decrescem juntas.</li><li>A covariância negativa indica que quando uma cresce a outra tende a decrescer.</li><li>Covariância zero significa variáveis descorrelacionadas, não necessariamente independentes.</li><li>Autovetores de matrizes simétricas são ortogonais.</li><li>A matriz de covariância é simétrica.</li><li>Para reduzir de M variáveis para L, deve-se escolher L &lt; M.</li><li>Os autovalores e autovetores devem ser mantidos pareados ao ordenar.</li><li>O índice de energia acumulada ajuda a escolher quantas componentes manter, por exemplo 90%.</li></ul>
+
+<h2 id="formulas">4. Fórmulas importantes</h2>
+<div class="formula"><strong>Média:</strong><br> X̄ = (Σ X<sub>i</sub>) / n</div>
+<p>Valor médio do conjunto de dados.</p>
+<div class="formula"><strong>Desvio padrão amostral:</strong><br>s = sqrt( Σ(X<sub>i</sub> − X̄)² / (n−1) )</div>
+<p>Mede o espalhamento dos dados em torno da média.</p>
+<div class="formula"><strong>Variância:</strong><br>var(X) = Σ(X<sub>i</sub> − X̄)(X<sub>i</sub> − X̄)/(n−1)</div>
+<p>É o quadrado do desvio padrão e mede espalhamento em uma dimensão.</p>
+<div class="formula"><strong>Covariância:</strong><br>cov(X,Y) = Σ(X<sub>i</sub> − X̄)(Y<sub>i</sub> − Ȳ)/(n−1)</div>
+<p>Mede como duas variáveis variam conjuntamente.</p>
+<div class="formula"><strong>Matriz de covariância:</strong><br>C = (1/(N−1)) B B<sup>T</sup></div>
+<p><strong>B</strong> é a matriz de dados após subtração da média. A matriz C resume variâncias e covariâncias.</p>
+<div class="formula"><strong>Autovalores e autovetores:</strong><br>A v = λ v</div>
+<p><strong>v</strong> é autovetor e <strong>λ</strong> é autovalor. No PCA, os autovetores da matriz de covariância formam os novos eixos.</p>
+<div class="formula"><strong>Projeção PCA:</strong><br>Y = W<sup>T</sup> Z = KLT{X}</div>
+<p><strong>W</strong> contém os L autovetores escolhidos; <strong>Z</strong> é a matriz padronizada ou de z-scores; <strong>Y</strong> são os dados projetados.</p>
+
+<h2 id="comparacoes">5. Comparações importantes</h2>
+<table><tr><th>Termo</th><th>O que mede</th><th>Detalhe de prova</th></tr><tr><td>Variância</td><td>Espalhamento de uma variável.</td><td>Atua em uma dimensão.</td></tr><tr><td>Covariância</td><td>Variação conjunta entre duas variáveis.</td><td>Sinal positivo/negativo importa.</td></tr><tr><td>Matriz de covariância</td><td>Variâncias na diagonal e covariâncias fora dela.</td><td>É simétrica.</td></tr><tr><td>Autovalor</td><td>Quantidade de variância na direção.</td><td>Serve para ordenar componentes.</td></tr><tr><td>Autovetor</td><td>Direção/eixo principal.</td><td>Forma a nova base do PCA.</td></tr></table>
+<table><tr><th>PCA linear</th><th>Kernel PCA</th></tr><tr><td>Projeta os dados em subespaço linear.</td><td>Mapeia dados para espaço de características via kernel.</td></tr><tr><td>Limitado pela linearidade.</td><td>Permite capturar relações não lineares.</td></tr><tr><td>Usa matriz de covariância/autovetores.</td><td>Usa matriz de kernel K(x<sub>i</sub>,x<sub>j</sub>).</td></tr></table>
+<table><tr><th>Método da covariância</th><th>GHA</th><th>APEX</th></tr><tr><td>Estatístico/algébrico, baseado em matriz de covariância.</td><td>Rede feedforward com aprendizagem hebbiana generalizada.</td><td>Rede com alimentação direta e realimentação lateral inibitória.</td></tr><tr><td>Calcula autovalores/autovetores explicitamente.</td><td>Extrai componentes por adaptação incremental dos pesos.</td><td>Determina a j-ésima componente com base nas j−1 anteriores.</td></tr></table>
+
+<h2 id="pseudocodigo">6. Pseudocódigo</h2>
+<h3>Método da covariância para PCA</h3>
+<pre>Entrada: matriz X com M variáveis e N observações; número L de componentes desejadas.
+Organize cada observação como uma coluna da matriz X.
+Calcule a média de cada variável e forme o vetor u.
+Subtraia u de cada coluna de X, gerando B.
+Calcule a matriz de covariância C = (1/(N−1)) BBT.
+Calcule autovalores e autovetores de C.
+Ordene autovalores em ordem decrescente e reordene os autovetores correspondentes.
+Escolha os L primeiros autovetores e forme W.
+Opcionalmente calcule z-scores Z.
+Projete os dados: Y = WT Z.
+Retorne Y e W.</pre>
+<h3>Explicação linha por linha</h3>
+<ul><li><strong>Organizar X:</strong> garante que as variáveis e observações estejam na forma esperada.</li><li><strong>Média u:</strong> encontra o centro dos dados.</li><li><strong>Subtração da média:</strong> centraliza os dados na origem.</li><li><strong>Covariância:</strong> revela como as variáveis variam juntas.</li><li><strong>Autovalores/autovetores:</strong> indicam direções principais e sua importância.</li><li><strong>Ordenação:</strong> coloca primeiro as direções de maior variância.</li><li><strong>Escolha L:</strong> reduz dimensionalidade mantendo energia/informação suficiente.</li><li><strong>Projeção:</strong> gera os dados no novo espaço de características.</li></ul>
+<h3>GHA — Algoritmo Hebbiano Generalizado</h3>
+<pre>Inicialize pesos wji pequenos e taxa de aprendizagem η positiva pequena.
+Para cada entrada x(k):
+    Calcule a saída de cada nodo yj(k).
+    Calcule a variação Δwji(k) pela regra hebbiana generalizada.
+    Atualize os pesos.
+Repita até os pesos atingirem equilíbrio.
+No equilíbrio, os pesos convergem para componentes dos autovetores associados aos autovalores.</pre>
+<h3>Kernel PCA</h3>
+<pre>Escolha uma função de kernel.
+Construa a matriz K, onde Kij = K(xi, xj).
+Resolva Kv = λv.
+Ordene autovalores e autovetores.
+Normalize os autovetores.
+Projete novos pontos usando os kernels entre o ponto de teste e os pontos de treinamento.</pre>
+
+<h2 id="questoes">7. Possíveis questões de prova e respostas modelo</h2>
+<div class="card question"><strong>Q1.</strong> O que é PCA?<div class="answer">PCA é uma transformação linear dos dados para um novo sistema de coordenadas, no qual a primeira coordenada corresponde à direção de maior variância, a segunda à segunda maior variância, e assim por diante. É usado para identificar padrões, reduzir dimensionalidade e comprimir dados.</div></div>
+<div class="card question"><strong>Q2.</strong> Por que PCA reduz dimensionalidade preservando informação?<div class="answer">Porque seleciona as direções que concentram maior variância dos dados. Ao manter as primeiras componentes principais, preserva-se a maior parte da energia ou informação intrínseca do conjunto original.</div></div>
+<div class="card question"><strong>Q3.</strong> Qual é o papel dos autovalores e autovetores no PCA?<div class="answer">Os autovetores da matriz de covariância definem os novos eixos do espaço. Os autovalores associados indicam a quantidade de variância explicada por cada direção. Por isso, os autovetores são ordenados por autovalores decrescentes.</div></div>
+<div class="card question"><strong>Q4.</strong> Explique o método da covariância.<div class="answer">Organizam-se os dados em uma matriz, calcula-se a média de cada variável, centralizam-se os dados, calcula-se a matriz de covariância, obtêm-se autovalores e autovetores, ordenam-se as componentes e projetam-se os dados nos autovetores escolhidos.</div></div>
+<div class="card question"><strong>Q5.</strong> O que diferencia Kernel PCA de PCA linear?<div class="answer">O PCA linear trabalha diretamente em um subespaço linear dos dados. O Kernel PCA aplica uma transformação não linear para um espaço de características e realiza PCA nesse espaço usando funções kernel.</div></div>
+
+<h2 id="simulado">8. Mini-simulado</h2>
+<div class="card question"><strong>1.</strong> Explique, em uma frase, o objetivo do PCA.</div>
+<div class="card question"><strong>2.</strong> O que significa uma covariância positiva?</div>
+<div class="card question"><strong>3.</strong> Qual a diferença entre autovalor e autovetor no PCA?</div>
+<div class="card question"><strong>4.</strong> Compare PCA linear e Kernel PCA.</div>
+<div class="card question"><strong>5.</strong> Escreva o pseudocódigo do método da covariância.</div>
+
+<h2 id="gabarito">9. Gabarito comentado</h2>
+<ol><li>Reduzir a dimensionalidade transformando dados para eixos de maior variância, preservando o máximo possível de informação.</li><li>Significa que as duas variáveis tendem a crescer ou decrescer juntas.</li><li>Autovetor é a direção/eixo principal; autovalor mede a variância/energia associada a essa direção.</li><li>PCA linear usa projeção linear; Kernel PCA usa kernel para mapear dados a um espaço de características, permitindo capturar padrões não lineares.</li><li>Organizar X; calcular média; centralizar; calcular C; obter autovalores/autovetores; ordenar; escolher L; projetar Y = WᵀZ.</li></ol>
+</section></main></body></html>

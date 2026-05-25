@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 05 - Redes de Função de Base Radial (RBF)</title>
+<style>
+:root{--bg:#f7f7f4;--paper:#fff;--ink:#1f2937;--muted:#667085;--brand:#8b0000;--brand2:#b42318;--border:#e5e7eb;--fall:#fff3cd;--dec:#e9f5ff;--ent:#eef8ee;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.6} .container{max-width:900px;margin:0 auto;padding:32px 18px 64px}.paper{background:var(--paper);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 8px 24px rgba(0,0,0,.06)} h1{font-size:2.1rem;color:var(--brand);line-height:1.15;margin:0 0 8px} h2{color:var(--brand);border-top:2px solid var(--border);padding-top:24px;margin-top:34px} h3{color:#344054;margin-top:22px}.meta{color:var(--muted);margin-bottom:22px}.tag{display:inline-block;background:#fee4e2;color:#912018;padding:4px 9px;border-radius:999px;font-weight:bold;font-size:.82rem;margin:4px 4px 4px 0}.card{border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 0;background:#fff}.likely{border-left:6px solid #f79009;background:var(--fall)}.memorize{border-left:6px solid #1570ef;background:var(--dec)}.understand{border-left:6px solid #12b76a;background:var(--ent)}.question{border-left:5px solid var(--brand2);background:#fffafa}.answer{background:#f9fafb;border-left:4px solid #98a2b3;padding:12px 14px;border-radius:8px;margin-top:10px} table{width:100%;border-collapse:collapse;margin:14px 0;overflow:auto} th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top} th{background:#f2f4f7} code,pre{background:#f2f4f7;border-radius:8px} pre{padding:14px;white-space:pre-wrap;overflow:auto}.toc{background:#f9fafb;border:1px solid var(--border);padding:16px;border-radius:12px}.toc a{color:var(--brand);text-decoration:none}.formula{font-family:Georgia,serif;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin:10px 0}.small{font-size:.92rem;color:var(--muted)} @media print{body{background:white}.container{padding:0}.paper{box-shadow:none;border:0;border-radius:0} a{color:inherit;text-decoration:none}.card{break-inside:avoid} h2{break-after:avoid}}
+</style>
+</head>
+<body>
+<main class="container">
+<section class="paper">
+<p><a href="index.html">← Voltar ao índice</a></p>
+<h1>Aula 05 — Redes de Função de Base Radial (RBF)</h1>
+<p class="meta">Simulado e guia de revisão baseado no slide <strong>RN-05-RBF.pdf</strong>. Conteúdo central: arquitetura RBF, função de base radial, aprendizagem, K-means, comparação com MLP-BP e papel dos campos receptivos.</p>
+<span class="tag">Redes RBF</span><span class="tag">Função Gaussiana</span><span class="tag">K-means</span><span class="tag">MLP-BP vs RBF</span><span class="tag">Interpolação</span>
+
+<div class="toc">
+<strong>Sumário</strong>
+<ol>
+<li><a href="#resumo">Resumo essencial</a></li>
+<li><a href="#conceitos">Conceitos principais</a></li>
+<li><a href="#detalhes">Detalhes bobos que podem cair</a></li>
+<li><a href="#formulas">Fórmulas importantes</a></li>
+<li><a href="#comparacoes">Comparações importantes</a></li>
+<li><a href="#questoes">Possíveis questões discursivas</a></li>
+<li><a href="#pseudocodigo">Pseudocódigo</a></li>
+<li><a href="#simulado">Mini-simulado</a></li>
+<li><a href="#gabarito">Gabarito comentado</a></li>
+</ol>
+</div>
+
+<h2 id="resumo">1. Resumo essencial</h2>
+<p>Redes de Função de Base Radial, ou <strong>RBF</strong>, são redes neurais de alimentação direta, normalmente com três camadas: entrada, escondida e saída. A diferença central em relação à MLP-BP é que a camada escondida da RBF usa <strong>funções de base radial</strong>, geralmente gaussianas, ativadas pela <strong>distância</strong> entre o vetor de entrada e um centro/protótipo.</p>
+<p>Enquanto uma MLP-BP usa produtos internos e funções sigmoidais para construir regiões de decisão mais globais, uma RBF usa unidades localmente sintonizadas, que respondem mais fortemente quando a entrada está próxima de seu centro. Por isso, RBFs são muito associadas a interpolação, aproximação de funções e classificação.</p>
+<div class="card likely"><strong>Provável de cair:</strong> explicar a arquitetura RBF, a diferença entre RBF e MLP-BP, o papel dos centros e larguras, e como o treinamento pode combinar aprendizagem não-supervisionada e supervisionada.</div>
+<div class="card understand"><strong>Entender:</strong> uma unidade escondida RBF não pergunta “qual é o produto interno com meus pesos?”, mas sim “quão perto esta entrada está do meu centro?”. Quanto mais perto, maior a ativação, especialmente no caso gaussiano.</div>
+
+<h2 id="conceitos">2. Conceitos principais que podem cair</h2>
+<div class="card">
+<h3>Arquitetura típica</h3>
+<ul>
+<li><strong>Camada de entrada:</strong> propaga os estímulos de entrada.</li>
+<li><strong>Camada escondida:</strong> aplica uma transformação não-linear usando campos receptivos locais.</li>
+<li><strong>Camada de saída:</strong> faz uma combinação linear das respostas da camada escondida.</li>
+</ul>
+</div>
+<div class="card">
+<h3>Campos receptivos locais</h3>
+<p>São regiões do espaço de entrada nas quais uma unidade escondida responde de forma significativa. Em RBF, cada unidade escondida está associada a um centro e a uma largura. Entradas próximas do centro ativam mais a unidade; entradas distantes ativam pouco.</p>
+</div>
+<div class="card">
+<h3>Função de base radial</h3>
+<p>É uma função cujo valor depende da distância entre a entrada e um centro. A função mais comum nos slides é a <strong>Gaussiana</strong>, com formato de sino.</p>
+</div>
+<div class="card">
+<h3>Aprendizagem em RBF</h3>
+<p>O treinamento mais comum separa o problema em duas partes: primeiro, determina-se centros e larguras por aprendizagem não-supervisionada; depois, ajustam-se os pesos da saída por aprendizagem supervisionada.</p>
+</div>
+<div class="card">
+<h3>Teorema de Cover</h3>
+<p>Um problema complexo de classificação tratado de forma não-linear em um espaço de dimensão alta tem maior chance de se tornar linearmente separável do que em um espaço de dimensão baixa.</p>
+</div>
+<div class="card">
+<h3>Interpolação</h3>
+<p>RBFs surgem historicamente ligadas à interpolação. A ideia é construir uma superfície que passe, ou aproxime, os pontos de treinamento. A generalização corresponde a estimar novos pontos não usados no treinamento.</p>
+</div>
+
+<h2 id="detalhes">3. Detalhes “bobos” que o professor pode cobrar</h2>
+<div class="card memorize">
+<ul>
+<li>RBF normalmente tem <strong>três camadas</strong>: entrada, escondida e saída.</li>
+<li>A camada de saída da RBF costuma ser <strong>linear</strong>.</li>
+<li>A camada escondida usa unidades <strong>localmente sintonizáveis</strong>.</li>
+<li>RBF não é treinada por retropropagação no mesmo padrão da MLP-BP apresentado na aula anterior.</li>
+<li>A função Gaussiana é a função de base radial mais destacada.</li>
+<li>Parâmetros importantes: <strong>número de funções de base</strong>, <strong>localização dos centros</strong> e <strong>largura do campo receptivo</strong>.</li>
+<li>Na aprendizagem exata, pode haver <strong>H = N</strong>, isto é, uma unidade escondida para cada padrão de treinamento.</li>
+<li>A aprendizagem exata pode classificar corretamente o treinamento, mas tende a ter <strong>generalização pobre</strong>.</li>
+<li>K-means pode ser usado para encontrar centros da camada escondida.</li>
+<li>RBF tende a treinar mais rápido que MLP-BP, mas pode precisar de mais dados.</li>
+</ul>
+</div>
+
+<h2 id="formulas">4. Fórmulas importantes</h2>
+<div class="card">
+<h3>Função aproximada por RBF</h3>
+<div class="formula">h(X) = Σ<sub>i</sub> w<sub>i</sub> Φ(||X − Λ<sub>i</sub>||)</div>
+<p><strong>h(X)</strong> é a saída aproximada para a entrada X. <strong>w<sub>i</sub></strong> é o peso associado à i-ésima função de base. <strong>Φ</strong> é a função de base radial. <strong>Λ<sub>i</sub></strong> é o centro/protótipo. <strong>||X − Λ<sub>i</sub>||</strong> mede a distância entre a entrada e o centro.</p>
+</div>
+<div class="card">
+<h3>Ativação da unidade escondida RBF</h3>
+<div class="formula">y<sub>j</sub>(x<sub>p</sub>) = F(||x<sub>p</sub> − μ<sub>j</sub>||, σ<sub>j</sub>)</div>
+<p><strong>y<sub>j</sub></strong> é a saída da j-ésima unidade escondida. <strong>x<sub>p</sub></strong> é o padrão de entrada. <strong>μ<sub>j</sub></strong> é o centro da unidade. <strong>σ<sub>j</sub></strong> é a largura do campo receptivo. A saída depende da distância entre entrada e centro.</p>
+</div>
+<div class="card">
+<h3>Função Gaussiana</h3>
+<div class="formula">y<sub>j</sub>(x<sub>p</sub>) = exp(− ||x<sub>p</sub> − μ<sub>j</sub>||² / 2σ<sub>j</sub>²)</div>
+<table>
+<tr><th>Item</th><th>Descrição</th></tr>
+<tr><td>Fórmula</td><td>exp(− distância² / 2σ²)</td></tr>
+<tr><td>Intervalo de saída</td><td>Tipicamente entre 0 e 1.</td></tr>
+<tr><td>Vantagem</td><td>Representa bem resposta local: perto do centro ativa muito, longe ativa pouco.</td></tr>
+<tr><td>Desvantagem</td><td>Depende fortemente da escolha do centro e da largura σ.</td></tr>
+<tr><td>Quando usar</td><td>Quando se quer modelar aproximação/interpolação local ou classificação com regiões locais.</td></tr>
+</table>
+<div class="card understand"><strong>Entender:</strong> se σ é muito pequeno, cada função fica estreita e responde só perto do centro. Se σ é muito grande, a função fica larga demais e pode suavizar excessivamente a aproximação.</div>
+</div>
+<div class="card">
+<h3>Saída linear</h3>
+<div class="formula">z<sub>l</sub>(x<sub>p</sub>) = Σ<sub>j=1</sub><sup>H</sup> w<sub>lj</sub> y<sub>j</sub>(x<sub>p</sub>)</div>
+<p><strong>z<sub>l</sub></strong> é a saída da l-ésima unidade de saída. <strong>H</strong> é o número de unidades escondidas. <strong>w<sub>lj</sub></strong> é o peso entre a unidade escondida j e a unidade de saída l. <strong>y<sub>j</sub></strong> é a ativação da unidade escondida.</p>
+</div>
+<div class="card">
+<h3>Interpolação exata</h3>
+<div class="formula">Φw = d ⇒ w = Φ<sup>−1</sup>d</div>
+<p><strong>Φ</strong> é a matriz de respostas das funções de base para os pontos de treinamento. <strong>w</strong> é o vetor de pesos. <strong>d</strong> é o vetor de saídas desejadas. A solução existe quando a matriz Φ é inversível.</p>
+</div>
+<div class="card">
+<h3>K-means: objetivo</h3>
+<div class="formula">arg min<sub>S</sub> Σ<sub>i=1</sub><sup>k</sup> Σ<sub>x∈Sᵢ</sub> ||x − μ<sub>i</sub>||²</div>
+<p>O K-means busca particionar os dados em k grupos minimizando a soma das distâncias quadráticas de cada ponto ao centroide de seu grupo. Em RBF, os centroides podem virar centros das funções de base.</p>
+</div>
+
+<h2 id="comparacoes">5. Comparações importantes</h2>
+<table>
+<tr><th>Aspecto</th><th>RBF</th><th>MLP-BP</th></tr>
+<tr><td>Camadas escondidas</td><td>Geralmente uma camada escondida.</td><td>Pode ter uma ou mais camadas escondidas.</td></tr>
+<tr><td>Ativação escondida</td><td>Função de base radial, geralmente Gaussiana.</td><td>Funções sigmoidais ou similares.</td></tr>
+<tr><td>Critério de ativação</td><td>Distância da entrada até um centro.</td><td>Produto interno entre entrada e pesos.</td></tr>
+<tr><td>Região de decisão</td><td>Mais local; pode separar por hiperelipsoides.</td><td>Mais global; pode separar por hiperplanos/regiões globais.</td></tr>
+<tr><td>Treinamento</td><td>Frequentemente separado: centros/larguras e depois pesos de saída.</td><td>Retropropagação ajustando pesos por gradiente.</td></tr>
+<tr><td>Velocidade de treinamento</td><td>Geralmente mais rápida.</td><td>Geralmente mais lenta em problemas complexos.</td></tr>
+<tr><td>Generalização/extrapolação</td><td>Boa interpolação local, mas tende a extrapolar pior.</td><td>Tende a extrapolar melhor por ajuste global.</td></tr>
+<tr><td>Dados necessários</td><td>Pode precisar de mais dados.</td><td>Pode ser melhor quando dados são custosos.</td></tr>
+</table>
+<div class="card likely"><strong>Provável de cair:</strong> “Compare RBF e MLP-BP”. Resposta forte: RBF usa distância a centros e funções locais; MLP-BP usa pesos, produto interno e retropropagação. RBF treina mais rápido, mas pode exigir mais dados e extrapolar pior.</div>
+
+<table>
+<tr><th>Tipo de aprendizagem em RBF</th><th>Como funciona</th><th>Ponto importante</th></tr>
+<tr><td>Aprendizagem exata</td><td>Usa N unidades escondidas para N padrões.</td><td>Acerta treinamento, mas pode generalizar mal.</td></tr>
+<tr><td>Centros aleatórios fixos</td><td>Escolhe H &lt; N centros aleatoriamente.</td><td>Simples e rápido, mas pode exigir muitos centros.</td></tr>
+<tr><td>Centros por clustering</td><td>Usa agrupamento, como K-means ou SOM.</td><td>Popular; centros não precisam coincidir com instâncias.</td></tr>
+<tr><td>Treinamento supervisionado completo</td><td>Ajusta pesos, centros e larguras considerando erro de saída.</td><td>Busca reduzir limitações dos métodos não-supervisionados.</td></tr>
+</table>
+
+<h2 id="questoes">6. Possíveis questões de prova e respostas modelo</h2>
+<div class="card question"><strong>Questão 1.</strong> Explique a arquitetura típica de uma rede RBF.
+<div class="answer"><strong>Resposta modelo:</strong> Uma rede RBF é uma rede feedforward normalmente formada por três camadas. A camada de entrada apenas propaga os estímulos. A camada escondida realiza uma transformação não-linear usando funções de base radial e campos receptivos locais. A camada de saída realiza uma combinação linear das ativações da camada escondida para produzir a resposta final.</div></div>
+<div class="card question"><strong>Questão 2.</strong> Qual é a diferença central entre a ativação de uma unidade escondida em uma MLP-BP e em uma RBF?
+<div class="answer"><strong>Resposta modelo:</strong> Na MLP-BP, a ativação da unidade escondida depende do produto interno entre o vetor de entrada e o vetor de pesos, seguido por uma função de ativação, geralmente sigmoidal. Na RBF, a ativação depende da distância entre o vetor de entrada e um centro/protótipo. Assim, a RBF responde localmente: entradas próximas ao centro produzem maior ativação.</div></div>
+<div class="card question"><strong>Questão 3.</strong> O que significa dizer que uma unidade RBF tem campo receptivo local?
+<div class="answer"><strong>Resposta modelo:</strong> Significa que a unidade responde significativamente apenas a uma região limitada do espaço de entrada. Essa região é definida por um centro e por uma largura. Quanto mais próxima a entrada estiver do centro, maior tende a ser a resposta da unidade; quanto mais distante, menor a resposta.</div></div>
+<div class="card question"><strong>Questão 4.</strong> Explique o papel de μ e σ na função Gaussiana de uma RBF.
+<div class="answer"><strong>Resposta modelo:</strong> O parâmetro μ representa o centro da função de base radial, isto é, o ponto do espaço de entrada onde a ativação é máxima. O parâmetro σ representa a largura do campo receptivo. Um σ menor gera uma função mais estreita e localizada; um σ maior gera uma função mais larga e suave.</div></div>
+<div class="card question"><strong>Questão 5.</strong> Por que a aprendizagem exata em RBF pode gerar generalização pobre?
+<div class="answer"><strong>Resposta modelo:</strong> Porque na aprendizagem exata a rede pode usar um centro para cada padrão de treinamento e ajustar os pesos para reproduzir exatamente os alvos do conjunto de treino. Isso garante bom desempenho nos dados vistos, mas pode gerar uma superfície pouco suave e muito dependente dos pontos de treinamento, prejudicando a resposta para novos dados.</div></div>
+<div class="card question"><strong>Questão 6.</strong> Como K-means pode ser usado no treinamento de uma RBF?
+<div class="answer"><strong>Resposta modelo:</strong> O K-means pode ser usado para particionar os dados de entrada em k grupos. Os centroides encontrados pelo algoritmo são usados como centros das unidades escondidas RBF. Depois disso, definem-se as larguras dos campos receptivos e ajustam-se os pesos da camada de saída por aprendizagem supervisionada.</div></div>
+<div class="card question"><strong>Questão 7.</strong> Compare RBF e MLP-BP quanto ao treinamento e à generalização.
+<div class="answer"><strong>Resposta modelo:</strong> A RBF geralmente possui treinamento mais rápido porque as unidades escondidas são localmente sintonizadas e o treinamento pode ser separado entre definição de centros/larguras e ajuste da saída. A MLP-BP costuma ajustar os pesos de forma global por retropropagação. Em aproximação de funções, a MLP-BP tende a extrapolar melhor, enquanto a RBF é mais associada a interpolação local e pode precisar de mais dados para atingir desempenho semelhante.</div></div>
+
+<h2 id="pseudocodigo">7. Pseudocódigo</h2>
+<h3>Pseudocódigo: treinamento comum de uma RBF com K-means + ajuste supervisionado</h3>
+<pre>Entrada: conjunto de treinamento com padrões X e alvos desejados D
+Escolha o número H de unidades escondidas RBF
+Aplique K-means nos padrões de entrada X para encontrar H centros
+Para cada centro encontrado:
+    Calcule a largura do campo receptivo σ
+Para cada padrão de treinamento:
+    Calcule a ativação de cada unidade escondida usando a função Gaussiana
+Monte a matriz Φ com as ativações das unidades escondidas
+Calcule os pesos da camada de saída usando os alvos desejados D
+Retorne a rede RBF treinada</pre>
+<div class="card understand">
+<h3>Explicação linha por linha</h3>
+<ol>
+<li><strong>Entrada:</strong> a rede precisa dos exemplos e das respostas desejadas.</li>
+<li><strong>Escolha H:</strong> define quantas funções de base radial serão usadas.</li>
+<li><strong>Aplique K-means:</strong> encontra centros representativos no espaço de entrada.</li>
+<li><strong>Calcule σ:</strong> define quão largo será o campo receptivo de cada unidade.</li>
+<li><strong>Calcule ativações:</strong> cada entrada é comparada com cada centro usando distância.</li>
+<li><strong>Monte Φ:</strong> organiza as respostas das unidades escondidas em uma matriz.</li>
+<li><strong>Calcule pesos de saída:</strong> ajusta a combinação linear para aproximar os alvos.</li>
+<li><strong>Retorne a rede:</strong> a RBF treinada pode ser usada para classificar ou aproximar novos dados.</li>
+</ol>
+</div>
+
+<h3>Pseudocódigo: K-means</h3>
+<pre>Entrada: conjunto de pontos X e número k de grupos
+Sorteie k centros iniciais entre os pontos conhecidos
+Repita:
+    Para cada ponto de X:
+        Atribua o ponto ao centro mais próximo
+    Para cada grupo formado:
+        Recalcule o centro como a média dos pontos do grupo
+Até que os centros não mudem significativamente
+Retorne os k centros</pre>
+<div class="card likely"><strong>Provável de cair:</strong> o professor pode pedir o pseudocódigo do K-means porque o slide lista explicitamente os passos: sortear centros, agrupar pelo centro mais próximo e recalcular centros até estabilizar.</div>
+
+<h2 id="simulado">8. Mini-simulado</h2>
+<div class="card question"><strong>1. Conceitual:</strong> O que é uma rede RBF e para quais tarefas ela é usada?</div>
+<div class="card question"><strong>2. Conceitual:</strong> Explique o papel dos centros e das larguras em uma RBF.</div>
+<div class="card question"><strong>3. Conceitual:</strong> Por que a camada de saída da RBF costuma ser linear?</div>
+<div class="card question"><strong>4. Comparação:</strong> Compare RBF e MLP-BP quanto à ativação, treinamento e extrapolação.</div>
+<div class="card question"><strong>5. Algoritmo:</strong> Escreva o pseudocódigo do treinamento de uma RBF usando K-means para definir centros.</div>
+
+<h2 id="gabarito">9. Gabarito comentado</h2>
+<div class="card"><strong>1.</strong> Uma RBF é uma rede feedforward, geralmente com entrada, camada escondida RBF e saída linear. Ela é usada para interpolação, aproximação de funções e classificação. O ponto central é usar funções locais, como Gaussianas, como blocos para construir a função final.</div>
+<div class="card"><strong>2.</strong> Os centros indicam onde cada função de base radial terá maior resposta. As larguras indicam o tamanho do campo receptivo. Larguras pequenas deixam a função muito local; larguras grandes suavizam mais a resposta.</div>
+<div class="card"><strong>3.</strong> Porque a não-linearidade principal já ocorre na camada escondida. A camada de saída combina linearmente as ativações das funções de base para formar a resposta final.</div>
+<div class="card"><strong>4.</strong> RBF ativa unidades pela distância ao centro, usa funções locais e costuma treinar mais rápido. MLP-BP ativa unidades por produto interno e funções sigmoidais, com ajuste global por retropropagação. RBF tende a interpolar localmente; MLP-BP tende a extrapolar melhor.</div>
+<div class="card"><strong>5.</strong> O pseudocódigo deve conter: escolher H/k; aplicar K-means; atribuir pontos ao centro mais próximo; recalcular centros; calcular larguras; calcular ativações gaussianas; montar matriz de ativações; ajustar pesos da saída usando os alvos.</div>
+
+<h2>Checklist de revisão rápida</h2>
+<ul>
+<li>Sei desenhar/descrever as três camadas da RBF.</li>
+<li>Sei explicar diferença entre produto interno na MLP-BP e distância ao centro na RBF.</li>
+<li>Sei escrever e explicar a função Gaussiana.</li>
+<li>Sei explicar centro μ e largura σ.</li>
+<li>Sei comparar aprendizagem exata, centros aleatórios, clustering e treinamento supervisionado.</li>
+<li>Sei escrever pseudocódigo do K-means.</li>
+<li>Sei comparar RBF e MLP-BP.</li>
+<li>Sei explicar por que campos receptivos pequenos ou grandes demais prejudicam a aproximação.</li>
+</ul>
+<p class="small">Arquivo gerado para revisão discursiva. Prioriza o conteúdo apresentado nos slides e evita aprofundamentos que não aparecem no material.</p>
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aula 04 — MLP-BP: Perceptron Multi-camadas treinada por Retropropagação</title>
+  <style>
+    :root{
+      --bg:#f7f7f4; --paper:#fff; --ink:#1f2933; --muted:#596574;
+      --brand:#8b0000; --line:#e5e7eb; --soft:#f9fafb;
+      --fall:#fff1f2; --fall-border:#be123c;
+      --decor:#fff7ed; --decor-border:#ea580c;
+      --under:#eff6ff; --under-border:#2563eb;
+      --ok:#ecfdf5; --ok-border:#059669;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial, Helvetica, sans-serif;line-height:1.6}
+    main{max-width:900px;margin:32px auto;padding:36px;background:var(--paper);border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.08)}
+    h1{font-size:2rem;line-height:1.15;margin:0 0 8px;color:var(--brand)}
+    h2{font-size:1.35rem;margin:38px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--line);color:#111827}
+    h3{font-size:1.05rem;margin:22px 0 8px;color:#111827}
+    p{margin:8px 0}
+    ul,ol{padding-left:24px}
+    a{color:var(--brand);font-weight:700;text-decoration:none}
+    a:hover{text-decoration:underline}
+    .meta{color:var(--muted);margin-bottom:28px}
+    .card{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+    .likely{background:var(--fall);border-left:6px solid var(--fall-border)}
+    .decorar{background:var(--decor);border-left:6px solid var(--decor-border)}
+    .entender{background:var(--under);border-left:6px solid var(--under-border)}
+    .answer{background:var(--ok);border-left:6px solid var(--ok-border)}
+    .tag{display:inline-block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border-radius:999px;padding:2px 10px;margin-right:6px;background:#eee;color:#333}
+    table{width:100%;border-collapse:collapse;margin:14px 0;background:#fff}
+    th,td{border:1px solid var(--line);padding:10px;vertical-align:top;text-align:left}
+    th{background:#f3f4f6;color:#111827}
+    code,kbd{font-family:Consolas, Monaco, monospace;background:#f3f4f6;border-radius:4px;padding:1px 4px}
+    pre{white-space:pre-wrap;background:#111827;color:#f9fafb;padding:16px;border-radius:12px;overflow:auto;font-size:.94rem;line-height:1.5}
+    .formula{font-family:Georgia, 'Times New Roman', serif;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;padding:12px;margin:10px 0}
+    .toc{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+    .toc a{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:#111827;font-weight:600}
+    @media print{body{background:#fff}main{box-shadow:none;margin:0;max-width:none;border-radius:0}.toc{display:none}a{text-decoration:none;color:#111827}}
+    @media(max-width:700px){main{margin:0;border-radius:0;padding:22px}.toc{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <p><a href="index.html">← Voltar ao índice</a></p>
+  <h1>Aula 04 — Perceptron Multi-camadas treinada por Retropropagação</h1>
+  <p class="meta">Simulado e material de revisão baseado no slide <strong>RN-04-MLP-BP</strong>.</p>
+
+  <div class="card likely">
+    <span class="tag">Provável de cair</span>
+    Entender a estrutura da MLP, o fluxo do algoritmo de retropropagação, as funções de ativação sigmoide e tangente hiperbólica, vantagens/desvantagens do MLP-BP, overfitting/generalização, taxa de aprendizagem, momento e critérios de parada.
+  </div>
+
+  <div class="toc">
+    <a href="#resumo">Resumo essencial</a>
+    <a href="#conceitos">Conceitos principais</a>
+    <a href="#formulas">Fórmulas importantes</a>
+    <a href="#ativacao">Funções de ativação</a>
+    <a href="#comparacoes">Comparações</a>
+    <a href="#pseudocodigo">Pseudocódigo</a>
+    <a href="#questoes">Possíveis questões</a>
+    <a href="#mini">Mini-simulado</a>
+  </div>
+
+  <h2 id="resumo">1. Resumo essencial</h2>
+  <p>O <strong>Perceptron Multicamadas</strong>, ou <strong>MLP</strong>, é uma rede neural supervisionada composta por camada de entrada, uma ou mais camadas escondidas e camada de saída. Ela é treinada por <strong>retropropagação do erro</strong>, usando métodos derivados do gradiente para ajustar pesos e bias.</p>
+  <p>A aprendizagem ocorre em dois momentos: primeiro, o sinal de entrada é propagado para frente até gerar uma saída; depois, o erro entre a saída obtida e a saída desejada é propagado de trás para frente para corrigir os pesos.</p>
+  <p>O MLP-BP surgiu para superar limitações do perceptron simples, que resolve apenas problemas linearmente separáveis e usa função limiar não diferenciável. Com camadas escondidas e funções diferenciáveis, a MLP consegue aprender transformações não lineares mais complexas.</p>
+
+  <h2 id="conceitos">2. Conceitos principais que podem cair</h2>
+  <div class="card likely">
+    <span class="tag">Provável de cair</span>
+    <strong>Por que MLP?</strong> Porque um perceptron simples só separa classes por hiperplanos. Camadas escondidas permitem construir fronteiras de decisão mais complexas e resolver problemas como XOR.
+  </div>
+  <ul>
+    <li><strong>Perceptron de Rosenblatt:</strong> neurônio com pesos e bias ajustáveis.</li>
+    <li><strong>Teorema da convergência do perceptron:</strong> se as classes são linearmente separáveis, o algoritmo converge para um hiperplano separador.</li>
+    <li><strong>Limitação do perceptron simples:</strong> não resolve problemas não linearmente separáveis e sua função limiar não é diferenciável.</li>
+    <li><strong>MLP:</strong> rede com camada de entrada, camada(s) escondida(s), camada de saída e alto grau de conectividade.</li>
+    <li><strong>Retropropagação:</strong> algoritmo que ajusta pesos propagando o erro da saída para as camadas anteriores.</li>
+    <li><strong>Gradiente descendente:</strong> método que altera pesos na direção oposta ao gradiente do erro.</li>
+    <li><strong>Unidades escondidas:</strong> atuam como detectores de características relevantes dos dados.</li>
+    <li><strong>Generalização:</strong> capacidade da rede responder bem a padrões não usados no treinamento.</li>
+    <li><strong>Sobre-treinamento:</strong> quando a rede memoriza o treinamento e perde desempenho em validação/teste.</li>
+  </ul>
+
+  <h2>3. Detalhes “bobos” que o professor pode cobrar</h2>
+  <div class="card decorar">
+    <span class="tag">Decorar</span>
+    <ul>
+      <li>MLP-BP = <strong>Multilayer Perceptron trained by Backpropagation</strong>.</li>
+      <li>Estágios da retropropagação: <strong>passo para frente</strong> e <strong>passo para trás</strong>.</li>
+      <li>A MLP usa funções de ativação <strong>não lineares, suaves e diferenciáveis</strong>.</li>
+      <li>Sigmoide logística: saída entre <strong>0 e 1</strong>.</li>
+      <li>Tangente hiperbólica: saída usualmente entre <strong>-a e a</strong>; quando a=1, fica entre <strong>-1 e 1</strong>.</li>
+      <li>Valor típico do termo de momento: <strong>0,9</strong>.</li>
+      <li>Taxa de aprendizagem fixa deve ser <strong>menor que 1</strong>.</li>
+      <li>Sugestão inicial de nodos escondidos citada: <strong>Npad/10</strong>.</li>
+      <li>Na seleção de modelo, sugestão para r: <strong>0,2</strong>.</li>
+      <li>Validação cruzada: separar cerca de <strong>10%</strong> das amostras para teste.</li>
+    </ul>
+  </div>
+
+  <h2 id="formulas">4. Fórmulas importantes</h2>
+
+  <h3>4.1 Sinal de erro da unidade de saída</h3>
+  <div class="formula">e<sub>k</sub>(n) = t<sub>k</sub>(n) − y<sub>k</sub>(n)</div>
+  <p><strong>e<sub>k</sub>(n)</strong> é o erro da unidade k na iteração n; <strong>t<sub>k</sub>(n)</strong> é a saída desejada; <strong>y<sub>k</sub>(n)</strong> é a saída produzida pela rede.</p>
+
+  <h3>4.2 Erro total em uma iteração</h3>
+  <div class="formula">E(n) = 1/2 · Σ<sub>k∈C</sub> e<sub>k</sub><sup>2</sup>(n)</div>
+  <p><strong>C</strong> é o conjunto de nodos de saída. O fator 1/2 simplifica a derivação quando se calcula o gradiente.</p>
+
+  <h3>4.3 Erro quadrático médio</h3>
+  <div class="formula">E<sub>av</sub> = (1/Npad) · Σ<sub>n=1</sub><sup>Npad</sup> E(n)</div>
+  <p><strong>Npad</strong> é o número de padrões de treinamento. O objetivo do treinamento é minimizar E<sub>av</sub>.</p>
+
+  <h3>4.4 Soma ponderada e saída do neurônio</h3>
+  <div class="formula">net<sub>j</sub>(n) = Σ w<sub>ji</sub>(n)x<sub>i</sub>(n) &nbsp;&nbsp; e &nbsp;&nbsp; y<sub>j</sub>(n) = φ<sub>j</sub>(net<sub>j</sub>(n))</div>
+  <p><strong>net</strong> é o campo local induzido pela soma ponderada das entradas. A função <strong>φ</strong> transforma essa soma na saída do neurônio.</p>
+
+  <h3>4.5 Atualização por gradiente descendente</h3>
+  <div class="formula">Δw<sub>pq</sub> = −η · ∂E/∂w<sub>pq</sub> &nbsp;&nbsp; e &nbsp;&nbsp; w(n+1) = w(n) + Δw(n)</div>
+  <p><strong>η</strong> é a taxa de aprendizagem. A atualização anda contra o gradiente porque o objetivo é reduzir o erro.</p>
+
+  <h3>4.6 Regra delta geral</h3>
+  <div class="formula">Δw<sub>ji</sub>(n) = η · δ<sub>j</sub>(n) · x<sub>i</sub>(n)</div>
+  <p>A correção no peso depende de três fatores: taxa de aprendizagem, sensibilidade/gradiente local da unidade e sinal de entrada.</p>
+
+  <h3>4.7 Ajuste de peso da camada escondida para saída</h3>
+  <div class="formula">Δw<sub>kj</sub> = η · δ<sub>k</sub> · z<sub>j</sub> = η · (t<sub>k</sub> − y<sub>k</sub>) · φ′(net<sub>k</sub>) · z<sub>j</sub></div>
+  <p><strong>z<sub>j</sub></strong> é a saída do neurônio escondido j; <strong>δ<sub>k</sub></strong> mede quanto o erro muda com a atividade da unidade de saída k.</p>
+
+  <h3>4.8 Ajuste de peso da entrada para camada escondida</h3>
+  <div class="formula">Δw<sub>ji</sub> = η · δ<sub>j</sub> · x<sub>i</sub> &nbsp;&nbsp; com &nbsp;&nbsp; δ<sub>j</sub> = φ′(net<sub>j</sub>) · Σ δ<sub>k</sub>w<sub>kj</sub></div>
+  <p>Na camada escondida, o erro não é observado diretamente; ele é calculado a partir dos erros propagados da camada seguinte.</p>
+
+  <h2 id="ativacao">5. Funções de ativação</h2>
+
+  <h3>5.1 Sigmoide logística</h3>
+  <table>
+    <tr><th>Item</th><th>Resposta</th></tr>
+    <tr><td>Fórmula</td><td>φ(net<sub>j</sub>) = 1 / [1 + exp(−a·net<sub>j</sub>)]</td></tr>
+    <tr><td>Derivada</td><td>φ′(net<sub>j</sub>) = a · y<sub>j</sub> · [1 − y<sub>j</sub>]</td></tr>
+    <tr><td>Intervalo de saída</td><td>0 &lt; y &lt; 1</td></tr>
+    <tr><td>Vantagem</td><td>É não linear, contínua, suave e diferenciável; por isso pode ser usada no gradiente descendente.</td></tr>
+    <tr><td>Desvantagem</td><td>Satura para valores muito grandes ou muito pequenos de entrada; a derivada tende a zero e a aprendizagem pode paralisar.</td></tr>
+    <tr><td>Quando usar</td><td>Quando a saída desejada é compatível com intervalo entre 0 e 1 e se deseja uma função diferenciável.</td></tr>
+  </table>
+
+  <h3>5.2 Tangente hiperbólica</h3>
+  <table>
+    <tr><th>Item</th><th>Resposta</th></tr>
+    <tr><td>Fórmula</td><td>φ(net<sub>j</sub>) = a · tanh(b·net<sub>j</sub>), com a,b &gt; 0</td></tr>
+    <tr><td>Derivada</td><td>φ′(net<sub>j</sub>) = a·b·sech²(b·net<sub>j</sub>) = (b/a)[a − y<sub>j</sub>][a + y<sub>j</sub>]</td></tr>
+    <tr><td>Intervalo de saída</td><td>Entre −a e a. Para a=1, entre −1 e 1.</td></tr>
+    <tr><td>Vantagem</td><td>É centrada em zero, o que tende a facilitar o treinamento em relação à sigmoide não simétrica.</td></tr>
+    <tr><td>Desvantagem</td><td>Também pode saturar e produzir derivadas próximas de zero em regiões extremas.</td></tr>
+    <tr><td>Quando usar</td><td>Quando é desejável uma ativação antiassimétrica, isto é, f(−v)=−f(v), e saídas centradas em zero.</td></tr>
+  </table>
+
+  <div class="card likely">
+    <span class="tag">Provável de cair</span>
+    Se a questão pedir “por que a função de ativação precisa ser diferenciável?”, responda: porque o ajuste dos pesos pelo gradiente descendente exige derivadas do erro em relação aos pesos, e essas derivadas dependem da derivada da função de ativação.
+  </div>
+
+  <h2 id="comparacoes">6. Comparações importantes</h2>
+
+  <h3>6.1 Perceptron simples × MLP</h3>
+  <table>
+    <tr><th>Critério</th><th>Perceptron simples</th><th>MLP-BP</th></tr>
+    <tr><td>Arquitetura</td><td>Uma camada de processamento</td><td>Entrada, camada(s) escondida(s) e saída</td></tr>
+    <tr><td>Problemas resolvidos</td><td>Linearmente separáveis</td><td>Problemas não lineares e mais complexos</td></tr>
+    <tr><td>Função de ativação</td><td>Limiar, não diferenciável</td><td>Funções diferenciáveis, como sigmoide e tanh</td></tr>
+    <tr><td>Treinamento</td><td>Regra do perceptron</td><td>Retropropagação do erro com gradiente</td></tr>
+    <tr><td>Exemplo clássico</td><td>Separação por hiperplano</td><td>Porta XOR</td></tr>
+  </table>
+
+  <h3>6.2 Treinamento em batelada × on-line × sequencial × estocástico</h3>
+  <table>
+    <tr><th>Tipo</th><th>Como funciona</th><th>Ponto de atenção</th></tr>
+    <tr><td>Batelada / batch</td><td>Atualiza pesos uma vez por época, após apresentar o conjunto de treinamento.</td><td>Alto custo de armazenamento.</td></tr>
+    <tr><td>On-line</td><td>Atualiza pesos a cada apresentação de padrão.</td><td>Útil quando há dados abundantes.</td></tr>
+    <tr><td>Sequencial</td><td>Atualiza pesos para cada amostra em uma ordem fixa.</td><td>A ordem pode levar a ótimos locais.</td></tr>
+    <tr><td>Estocástico</td><td>Seleciona amostras aleatoriamente, sem reposição dentro da época.</td><td>Ajuda a reduzir efeitos ruins da ordem fixa.</td></tr>
+  </table>
+
+  <h3>6.3 Pontos positivos × pontos negativos do MLP-BP</h3>
+  <table>
+    <tr><th>Pontos positivos</th><th>Pontos negativos</th></tr>
+    <tr><td>Alto poder de representação.</td><td>Pode demorar para convergir em transformações complexas.</td></tr>
+    <tr><td>Larga aplicabilidade.</td><td>Pode ser vista como caixa preta.</td></tr>
+    <tr><td>Não exige conhecimento profundo do domínio.</td><td>Não fornece explicação clara das associações aprendidas.</td></tr>
+    <tr><td>Tolera dados ruidosos ou faltantes.</td><td>Gradiente descendente pode parar em mínimos locais.</td></tr>
+    <tr><td>Algoritmo relativamente simples de implementar.</td><td>Generalização não é garantida.</td></tr>
+  </table>
+
+  <h2 id="pseudocodigo">7. Pseudocódigo do algoritmo MLP-BP</h2>
+  <pre>Algoritmo MLP-BP
+
+1. Inicialize aleatoriamente os pesos e os bias da rede.
+2. Enquanto o erro médio Eav ainda for insatisfatório
+   e houver disponibilidade computacional, faça:
+
+   2.1 Para cada padrão de treinamento, faça:
+
+       Passo para frente:
+       a) Compute a soma ponderada dos nodos da camada escondida.
+       b) Aplique a função de ativação e obtenha a resposta dos nodos escondidos.
+       c) Compute a soma ponderada dos nodos da camada de saída.
+       d) Aplique a função de ativação e obtenha a resposta da saída.
+       e) Calcule o erro entre a saída desejada e a saída produzida.
+
+       Passo para trás:
+       f) Calcule a sensibilidade dos nodos de saída.
+       g) Modifique os pesos que chegam à camada de saída.
+       h) Propague o erro para as camadas escondidas.
+       i) Modifique os pesos que chegam às camadas escondidas.
+
+   2.2 Fim do para cada padrão.
+
+3. Fim do enquanto.
+4. Retorne a rede treinada.</pre>
+
+  <h3>Explicação linha por linha</h3>
+  <ol>
+    <li><strong>Inicializar pesos e bias:</strong> a rede começa com parâmetros aleatórios; não se deve iniciar todos os pesos em zero.</li>
+    <li><strong>Enquanto o erro for insatisfatório:</strong> o treinamento continua até atingir um critério de parada, como erro aceitável, erro estacionário ou limite computacional.</li>
+    <li><strong>Para cada padrão:</strong> a rede apresenta cada exemplo de treinamento e ajusta seus pesos.</li>
+    <li><strong>Soma ponderada na camada escondida:</strong> cada neurônio escondido calcula seu net a partir das entradas e pesos.</li>
+    <li><strong>Ativação escondida:</strong> a função não linear transforma o net em saída do neurônio escondido.</li>
+    <li><strong>Soma ponderada na saída:</strong> os neurônios de saída recebem as respostas dos neurônios escondidos.</li>
+    <li><strong>Ativação da saída:</strong> a rede produz sua resposta final.</li>
+    <li><strong>Cálculo do erro:</strong> compara-se saída produzida com saída desejada.</li>
+    <li><strong>Sensibilidade da saída:</strong> calcula quanto cada unidade de saída contribui para o erro.</li>
+    <li><strong>Ajuste dos pesos da saída:</strong> aplica-se a regra delta usando erro, derivada da ativação e saída da camada anterior.</li>
+    <li><strong>Propagação para camadas escondidas:</strong> como não há erro desejado direto na camada escondida, ele é estimado pelos erros da camada seguinte.</li>
+    <li><strong>Ajuste dos pesos escondidos:</strong> corrige pesos anteriores com base na sensibilidade calculada.</li>
+  </ol>
+
+  <h2>8. Heurísticas e técnicas de melhoria</h2>
+  <div class="card entender">
+    <span class="tag">Entender</span>
+    A maior parte das técnicas busca melhorar convergência, evitar saturação, reduzir overfitting ou melhorar generalização.
+  </div>
+  <ul>
+    <li><strong>Escalonamento de entrada/saída:</strong> padroniza escalas para evitar que variáveis maiores dominem a redução do erro.</li>
+    <li><strong>Dados ruidosos ou artificiais:</strong> aumentam o conjunto de treinamento quando ele é pequeno.</li>
+    <li><strong>Número de unidades escondidas:</strong> muitas unidades podem sobreajustar; poucas podem subajustar.</li>
+    <li><strong>Inicialização de pesos:</strong> pesos altos saturam unidades; pesos muito baixos deixam a rede em região plana.</li>
+    <li><strong>Momento:</strong> acelera em planícies e reduz variações bruscas de direção.</li>
+    <li><strong>Taxa de aprendizagem:</strong> pequena é lenta; grande pode causar instabilidade.</li>
+    <li><strong>Decaimento de pesos:</strong> mantém pesos pequenos, simplifica a rede e ajuda a evitar sobre-treinamento.</li>
+    <li><strong>Poda:</strong> remove pesos pequenos para reduzir complexidade e melhorar generalização.</li>
+    <li><strong>Regularização:</strong> adiciona penalização de complexidade à função de custo.</li>
+    <li><strong>Aprendizagem a partir de pistas:</strong> usa conhecimento a priori ou tarefas secundárias relacionadas.</li>
+    <li><strong>Critério de parada:</strong> evita treinamento excessivo, especialmente usando validação separada.</li>
+  </ul>
+
+  <h2 id="questoes">9. Possíveis questões de prova com respostas modelo</h2>
+
+  <div class="card">
+    <h3>Questão 1 — Explique por que o perceptron simples não é suficiente para problemas como XOR.</h3>
+    <div class="card answer">
+      <strong>Resposta modelo:</strong> O perceptron simples só consegue separar classes linearmente separáveis, pois sua superfície de decisão é um hiperplano. O problema XOR não é linearmente separável, então não existe uma única reta ou hiperplano que separe corretamente suas classes. A MLP resolve essa limitação usando camadas escondidas, que realizam transformações não lineares do espaço de entrada e permitem construir regiões de decisão mais complexas.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Questão 2 — Descreva os dois passos da aprendizagem por retropropagação.</h3>
+    <div class="card answer">
+      <strong>Resposta modelo:</strong> No passo para frente, o padrão de entrada é propagado camada por camada até produzir a saída da rede. Essa saída é comparada com a saída desejada para calcular o erro. No passo para trás, o erro é propagado da camada de saída em direção às camadas anteriores, calculando gradientes locais e ajustando os pesos sinápticos para reduzir o erro.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Questão 3 — O que é sensibilidade no contexto do MLP-BP?</h3>
+    <div class="card answer">
+      <strong>Resposta modelo:</strong> Sensibilidade, representada por δ, descreve como o erro total se modifica em relação à atividade líquida, ou net, de uma unidade. Ela indica a contribuição daquele neurônio para o erro e é usada para ajustar os pesos. Na camada de saída, depende diretamente do erro entre alvo e saída; na camada escondida, é calculada a partir das sensibilidades das camadas seguintes.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Questão 4 — Explique a paralisação da rede com função sigmoide.</h3>
+    <div class="card answer">
+      <strong>Resposta modelo:</strong> A paralisação ocorre quando a entrada de um neurônio cai em região de saturação da sigmoide, geralmente por causa de pesos muito grandes. Nessa região, a saída quase não muda mesmo quando a entrada cresce, e a derivada da função tende a zero. Como o gradiente depende dessa derivada, as atualizações de peso ficam muito pequenas, prejudicando a aprendizagem. Possíveis soluções são usar funções que não saturem ou normalizar periodicamente os pesos.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Questão 5 — Compare treinamento batch e treinamento on-line.</h3>
+    <div class="card answer">
+      <strong>Resposta modelo:</strong> No treinamento batch, os pesos são atualizados apenas uma vez por época, após a apresentação de todos os padrões de treinamento, o que pode ter alto custo de armazenamento. No treinamento on-line, os pesos são atualizados a cada padrão apresentado. O modo on-line é mais incremental e costuma ser usado quando há dados abundantes ou fluxo contínuo de exemplos.
+    </div>
+  </div>
+
+  <h2 id="mini">10. Mini-simulado</h2>
+
+  <div class="card">
+    <h3>Questão conceitual 1</h3>
+    <p>Quais são as três características importantes de uma MLP citadas no slide?</p>
+  </div>
+  <div class="card">
+    <h3>Questão conceitual 2</h3>
+    <p>Explique o papel das unidades escondidas em uma MLP-BP.</p>
+  </div>
+  <div class="card">
+    <h3>Questão conceitual 3</h3>
+    <p>Por que a generalização de uma MLP-BP não é garantida?</p>
+  </div>
+  <div class="card">
+    <h3>Questão de comparação</h3>
+    <p>Compare sigmoide logística e tangente hiperbólica quanto ao intervalo de saída, centralização e problema de saturação.</p>
+  </div>
+  <div class="card">
+    <h3>Questão de pseudocódigo</h3>
+    <p>Escreva o pseudocódigo do algoritmo MLP-BP, separando claramente o passo para frente e o passo para trás.</p>
+  </div>
+
+  <h2>11. Gabarito comentado</h2>
+
+  <div class="card answer">
+    <h3>Gabarito 1</h3>
+    <p>As três características são: função de ativação logística/sigmoidal não linear, suave e diferenciável; existência de pelo menos uma camada escondida; alto grau de conectividade. Essas características permitem que a rede aprenda tarefas mais complexas do que o perceptron simples.</p>
+  </div>
+
+  <div class="card answer">
+    <h3>Gabarito 2</h3>
+    <p>As unidades escondidas atuam como detectores de características. Durante o treinamento, elas descobrem gradualmente características salientes dos padrões de entrada e realizam uma transformação não linear do espaço original para um espaço de características mais útil para a saída.</p>
+  </div>
+
+  <div class="card answer">
+    <h3>Gabarito 3</h3>
+    <p>A generalização não é garantida porque a rede pode se sobreajustar aos dados de treinamento. Nesse caso, ela atende muito bem aos padrões treinados, mas não responde de forma acurada a entradas não treinadas. Isso pode ocorrer por excesso de épocas, excesso de unidades escondidas, dados pouco representativos ou ruído aprendido como se fosse padrão.</p>
+  </div>
+
+  <div class="card answer">
+    <h3>Gabarito 4</h3>
+    <p>A sigmoide logística tem saída entre 0 e 1 e não é centrada em zero. A tangente hiperbólica tem saída entre −a e a, normalmente −1 e 1, sendo centrada em zero. Ambas são diferenciáveis e podem saturar em entradas extremas, fazendo a derivada tender a zero e dificultando o aprendizado.</p>
+  </div>
+
+  <div class="card answer">
+    <h3>Gabarito 5</h3>
+    <p>O pseudocódigo deve incluir: inicialização aleatória de pesos e bias; laço enquanto o erro for insatisfatório; para cada padrão, calcular somas ponderadas e ativações nas camadas escondida e de saída; calcular erro; ajustar pesos da saída; propagar erro para camadas escondidas; ajustar pesos das camadas escondidas; repetir até critério de parada.</p>
+  </div>
+
+  <h2>12. Checklist final de revisão</h2>
+  <ul>
+    <li>Sei explicar por que MLP supera perceptron simples.</li>
+    <li>Sei diferenciar passo para frente e passo para trás.</li>
+    <li>Sei escrever o pseudocódigo do MLP-BP.</li>
+    <li>Sei explicar sigmoide, tanh e saturação.</li>
+    <li>Sei explicar overfitting, validação e early stopping.</li>
+    <li>Sei comparar batch, on-line, sequencial e estocástico.</li>
+    <li>Sei listar pontos positivos e negativos do MLP-BP.</li>
+    <li>Sei explicar momento, taxa de aprendizagem, regularização e poda.</li>
+  </ul>
+</main>
+</body>
+</html>

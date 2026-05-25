@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 06 — Máquinas de Vetores de Suporte / SVM</title>
+<style>
+:root{--bg:#f7f7f4;--paper:#fff;--ink:#1f2937;--muted:#667085;--brand:#8b0000;--brand2:#b42318;--border:#e5e7eb;--fall:#fff3cd;--dec:#e9f5ff;--ent:#eef8ee;--warn:#fff7ed;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.6}.container{max-width:900px;margin:0 auto;padding:32px 18px 64px}.paper{background:var(--paper);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 8px 24px rgba(0,0,0,.06)}h1{font-size:2.05rem;color:var(--brand);line-height:1.15;margin:0 0 8px}h2{color:var(--brand);border-top:2px solid var(--border);padding-top:24px;margin-top:34px}h3{color:#344054;margin-top:22px}.meta{color:var(--muted);margin-bottom:22px}.tag{display:inline-block;background:#fee4e2;color:#912018;padding:4px 9px;border-radius:999px;font-weight:bold;font-size:.82rem;margin:4px 4px 4px 0}.card{border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 0;background:#fff}.likely{border-left:6px solid #f79009;background:var(--fall)}.memorize{border-left:6px solid #1570ef;background:var(--dec)}.understand{border-left:6px solid #12b76a;background:var(--ent)}.question{border-left:5px solid var(--brand2);background:#fffafa}.answer{background:#f9fafb;border-left:4px solid #98a2b3;padding:12px 14px;border-radius:8px;margin-top:10px}.warn{border-left:6px solid #fb6514;background:var(--warn)}table{width:100%;border-collapse:collapse;margin:14px 0;overflow:auto}th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{background:#f2f4f7}code,pre{background:#f2f4f7;border-radius:8px}pre{padding:14px;white-space:pre-wrap;overflow:auto}.toc{background:#f9fafb;border:1px solid var(--border);padding:16px;border-radius:12px}.toc a{color:var(--brand);text-decoration:none}.formula{font-family:Georgia,serif;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin:10px 0}.small{font-size:.92rem;color:var(--muted)}.pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:3px 8px;margin:2px;background:#fff}@media print{body{background:white}.container{padding:0}.paper{box-shadow:none;border:0;border-radius:0}a{color:inherit;text-decoration:none}.card{break-inside:avoid}h2{break-after:avoid}}
+</style>
+</head>
+<body>
+<main class="container">
+<section class="paper">
+<h1>Aula 06 — Máquinas de Vetores de Suporte / SVM</h1>
+<p class="meta">Simulado e material de revisão gerado a partir do slide <strong>RN-06-SVM.pdf</strong>. Foco: prova conceitual, fórmulas essenciais, comparações e questões discursivas.</p>
+<p><a href="index.html">← Voltar ao índice</a></p>
+
+<div class="toc">
+<strong>Sumário rápido</strong>
+<ol>
+<li><a href="#resumo">Resumo essencial</a></li>
+<li><a href="#conceitos">Conceitos principais</a></li>
+<li><a href="#detalhes">Detalhes “bobos” que podem cair</a></li>
+<li><a href="#formulas">Fórmulas importantes</a></li>
+<li><a href="#comparacoes">Comparações em tabelas</a></li>
+<li><a href="#questoes">Possíveis questões de prova</a></li>
+<li><a href="#pseudocodigo">Pseudocódigo</a></li>
+<li><a href="#mini">Mini-simulado</a></li>
+<li><a href="#gabarito">Gabarito comentado</a></li>
+</ol>
+</div>
+
+<h2 id="resumo">1. Resumo essencial</h2>
+<div class="card likely"><strong>Provável de cair:</strong> SVM é um método baseado na Teoria de Aprendizagem Estatística que busca um classificador com baixo erro de treinamento e boa generalização. A ideia central é escolher o hiperplano separador com <strong>maior margem</strong>, pois margens maiores tendem a reduzir a complexidade efetiva do classificador e melhorar a generalização.</div>
+<p>As Máquinas de Vetores de Suporte foram apresentadas como classificadores fundamentados na Teoria de Aprendizagem Estatística de Vapnik e Chervonenkis. O objetivo é separar padrões em categorias, especialmente em problemas binários, controlando ao mesmo tempo o erro empírico e a complexidade da função de decisão.</p>
+<p>Quando os dados são linearmente separáveis, a SVM de margem rígida procura o hiperplano ótimo. Quando os dados não são perfeitamente separáveis, introduzem-se variáveis de folga e uma margem flexível. Para problemas não lineares, usa-se um mapeamento para um espaço de características e a função kernel permite calcular similaridades nesse espaço sem explicitar o mapeamento.</p>
+
+<h2 id="conceitos">2. Conceitos principais que podem cair</h2>
+<div class="card understand"><strong>Entender:</strong> a SVM não tenta apenas “separar os dados”. Ela tenta separar com a maior margem possível e com controle de complexidade.</div>
+<ul>
+<li><strong>Teoria de Aprendizagem Estatística:</strong> base matemática para escolher funções com bom desempenho em treinamento e teste.</li>
+<li><strong>Minimização do Risco Estrutural:</strong> ideia de minimizar risco empírico e termo de complexidade.</li>
+<li><strong>Dimensão VC:</strong> medida da capacidade/complexidade de um conjunto de funções classificadoras.</li>
+<li><strong>Margem de separação:</strong> menor distância entre exemplos de treinamento e o hiperplano separador.</li>
+<li><strong>Hiperplano ótimo:</strong> hiperplano de maior margem que separa as classes.</li>
+<li><strong>Vetores de suporte:</strong> padrões mais próximos do hiperplano, que determinam a margem e a fronteira de decisão.</li>
+<li><strong>Margem rígida:</strong> assume dados linearmente separáveis sem erros.</li>
+<li><strong>Margem flexível:</strong> permite violações usando variáveis de folga e penalização.</li>
+<li><strong>Kernel:</strong> função que calcula produto interno no espaço de características sem calcular explicitamente o mapeamento.</li>
+<li><strong>SVM multiclasse:</strong> normalmente reduzida a vários problemas binários: um-contra-todos ou um-contra-um.</li>
+</ul>
+
+<h2 id="detalhes">3. Detalhes “bobos” que o professor pode cobrar</h2>
+<div class="card memorize"><strong>Decorar:</strong> SVM significa <em>Support Vector Machine</em>; no slide aparece como Máquinas de Vetores de Suporte. A aula destaca Vapnik e Chervonenkis, margem máxima, dimensão VC, kernel e vetores de suporte.</div>
+<ul>
+<li>As SVMs foram originalmente projetadas para classificação binária.</li>
+<li>O conjunto de classes pode ser representado como <code>{0,1}</code>, <code>{-1,+1}</code>, <code>{o,x}</code>, etc.</li>
+<li>A abordagem clássica de aumentar o grau de um polinômio pode reduzir erro de treinamento, mas causar <em>overfitting</em>.</li>
+<li>Reduzir muito a complexidade pode causar <em>underfitting</em>.</li>
+<li>O hiperplano separador é descrito por <code>wᵀx + b = 0</code>.</li>
+<li>Os vetores de suporte são os padrões mais difíceis de classificar, pois ficam mais próximos da fronteira.</li>
+<li>O problema de margem rígida minimiza a norma de <code>w</code>.</li>
+<li>A função objetivo é convexa; por isso há um ótimo global.</li>
+<li>A função kernel mede similaridade entre vetores.</li>
+<li>Exemplos de aplicação citados: detecção de faces, categorização de textos, regressão linear, bioinformática e reconhecimento de caracteres manuscritos.</li>
+</ul>
+
+<h2 id="formulas">4. Fórmulas importantes</h2>
+
+<h3>4.1 Hiperplano de separação</h3>
+<div class="formula">w<sup>T</sup>x + b = 0</div>
+<ul>
+<li><strong>w:</strong> vetor normal ao hiperplano; controla a orientação da fronteira.</li>
+<li><strong>x:</strong> vetor de entrada.</li>
+<li><strong>b:</strong> bias; desloca o hiperplano.</li>
+</ul>
+<div class="formula">y = +1, se w<sup>T</sup>x + b &gt; 0<br>y = -1, se w<sup>T</sup>x + b &lt; 0</div>
+<p>A saída é definida pelo lado do hiperplano em que o ponto está.</p>
+
+<h3>4.2 Risco estrutural</h3>
+<div class="formula">risco esperado ≤ risco empírico + termo de complexidade</div>
+<p>Essa expressão resume a ideia da Minimização do Risco Estrutural: não basta acertar o treinamento; também é preciso controlar a complexidade para generalizar melhor.</p>
+
+<h3>4.3 Risco empírico</h3>
+<div class="formula">R<sub>emp</sub>(f) = (1 / 2n) Σ c(f(x<sub>i</sub>), y<sub>i</sub>)</div>
+<ul>
+<li><strong>n:</strong> número de pares entrada-saída.</li>
+<li><strong>c:</strong> função de custo entre a previsão e a saída desejada.</li>
+<li><strong>f(x<sub>i</sub>):</strong> previsão do classificador.</li>
+<li><strong>y<sub>i</sub>:</strong> classe desejada.</li>
+</ul>
+
+<h3>4.4 Condição de separação da SVM de margem rígida</h3>
+<div class="formula">d<sub>i</sub>(w<sup>T</sup>x<sub>i</sub> + b) ≥ 1</div>
+<p>Essa restrição garante que cada padrão esteja do lado correto da margem.</p>
+<ul>
+<li><strong>d<sub>i</sub>:</strong> rótulo da classe, normalmente +1 ou -1.</li>
+<li><strong>x<sub>i</sub>:</strong> amostra de treinamento.</li>
+<li><strong>w, b:</strong> parâmetros do hiperplano.</li>
+</ul>
+
+<h3>4.5 Função de custo da margem rígida</h3>
+<div class="formula">Φ(w) = 1/2 · w<sup>T</sup>w</div>
+<p>Minimizar essa função equivale a minimizar a norma de <code>w</code>, o que maximiza a margem.</p>
+
+<h3>4.6 Margem ótima</h3>
+<div class="formula">ρ<sub>0</sub> = 2 / ||w<sub>0</sub>||</div>
+<p>A distância entre os dois hiperplanos de suporte é inversamente proporcional à norma do vetor de pesos ótimo.</p>
+
+<h3>4.7 Margem flexível</h3>
+<div class="formula">d<sub>i</sub>(w<sup>T</sup>x<sub>i</sub> + b) ≥ 1 - ξ<sub>i</sub></div>
+<div class="formula">Φ(w, ξ) = 1/2 · w<sup>T</sup>w + C Σ ξ<sub>i</sub></div>
+<ul>
+<li><strong>ξ<sub>i</sub>:</strong> variável de folga; mede violação da margem.</li>
+<li><strong>C:</strong> parâmetro definido pelo usuário que controla a penalização das violações.</li>
+<li><strong>0 ≤ ξ<sub>i</sub> ≤ 1:</strong> ponto dentro da margem, mas ainda do lado correto.</li>
+<li><strong>ξ<sub>i</sub> &gt; 1:</strong> ponto do lado incorreto da superfície de decisão.</li>
+</ul>
+
+<h3>4.8 Função kernel</h3>
+<div class="formula">K(x<sub>i</sub>, x<sub>j</sub>) = Φ(x<sub>i</sub>) · Φ(x<sub>j</sub>)</div>
+<p>O kernel permite calcular produto interno no espaço transformado sem conhecer explicitamente a função Φ.</p>
+<div class="formula">f(x<sub>j</sub>) = sgn(Σ α<sub>i</sub>d<sub>i</sub>K(x<sub>i</sub>, x<sub>j</sub>) + b)</div>
+<p>Essa é a forma de decisão usando kernel: a classe é definida pelo sinal da soma ponderada das similaridades.</p>
+
+<h2 id="comparacoes">5. Comparações importantes</h2>
+<h3>5.1 Overfitting, underfitting e bom ajuste</h3>
+<table>
+<thead><tr><th>Situação</th><th>O que acontece</th><th>Consequência</th></tr></thead>
+<tbody>
+<tr><td>Overfitting</td><td>Função muito complexa se ajusta demais ao treinamento.</td><td>Baixo erro de treinamento, mas baixa generalização.</td></tr>
+<tr><td>Underfitting</td><td>Função simples demais não representa bem os dados.</td><td>Erro alto até no treinamento.</td></tr>
+<tr><td>Bom ajuste</td><td>Equilíbrio entre erro empírico e complexidade.</td><td>Melhor capacidade de generalização.</td></tr>
+</tbody>
+</table>
+
+<h3>5.2 Margem rígida versus margem flexível</h3>
+<table>
+<thead><tr><th>Critério</th><th>Margem rígida</th><th>Margem flexível</th></tr></thead>
+<tbody>
+<tr><td>Hipótese</td><td>Dados linearmente separáveis.</td><td>Dados podem ter ruído, sobreposição ou erros.</td></tr>
+<tr><td>Restrições</td><td>Não permite violações.</td><td>Permite violações por variáveis ξ.</td></tr>
+<tr><td>Uso típico</td><td>Cenário ideal, mais teórico.</td><td>Cenário mais realista.</td></tr>
+<tr><td>Função de custo</td><td>Minimiza 1/2 wᵀw.</td><td>Minimiza 1/2 wᵀw + CΣξᵢ.</td></tr>
+</tbody>
+</table>
+
+<h3>5.3 Um-contra-todos versus um-contra-um</h3>
+<table>
+<thead><tr><th>Abordagem</th><th>Como funciona</th><th>Número de classificadores</th><th>Observação</th></tr></thead>
+<tbody>
+<tr><td>Um-contra-todos</td><td>Treina um classificador para cada classe contra todas as demais.</td><td>k classificadores.</td><td>Fácil de entender, mas pode gerar conjuntos desbalanceados.</td></tr>
+<tr><td>Um-contra-um</td><td>Treina classificadores para cada par de classes.</td><td>k(k-1)/2 classificadores.</td><td>Usa votação para decidir a classe final.</td></tr>
+</tbody>
+</table>
+
+<h3>5.4 SVM linear, SVM com margem flexível e SVM com kernel</h3>
+<table>
+<thead><tr><th>Tipo</th><th>Ideia central</th><th>Quando usar</th></tr></thead>
+<tbody>
+<tr><td>SVM linear de margem rígida</td><td>Busca hiperplano ótimo sem permitir erro.</td><td>Dados perfeitamente separáveis.</td></tr>
+<tr><td>SVM com margem flexível</td><td>Permite violações penalizadas.</td><td>Dados reais, com ruído ou sobreposição.</td></tr>
+<tr><td>SVM com kernel</td><td>Mapeia implicitamente os dados para espaço de características.</td><td>Dados não-linearmente separáveis.</td></tr>
+</tbody>
+</table>
+
+<h2 id="questoes">6. Possíveis questões de prova com respostas modelo</h2>
+<div class="card question"><strong>Questão 1.</strong> Explique a ideia central de uma SVM e por que a margem é importante.
+<div class="answer"><strong>Resposta modelo:</strong> A SVM busca construir um hiperplano de separação entre classes, escolhendo aquele que possui a maior margem em relação aos exemplos de treinamento. A margem é importante porque representa a distância mínima entre os exemplos e a fronteira de decisão. Quanto maior a margem, menor tende a ser a complexidade efetiva do classificador e melhor sua capacidade de generalização.</div></div>
+
+<div class="card question"><strong>Questão 2.</strong> O que são vetores de suporte?
+<div class="answer"><strong>Resposta modelo:</strong> Vetores de suporte são os exemplos de treinamento mais próximos do hiperplano separador. Eles ficam sobre os hiperplanos de margem e são os padrões mais difíceis de classificar. Esses vetores são essenciais porque determinam a posição da fronteira de decisão e a margem ótima da SVM.</div></div>
+
+<div class="card question"><strong>Questão 3.</strong> Diferencie risco empírico e risco esperado/funcional.
+<div class="answer"><strong>Resposta modelo:</strong> O risco empírico mede o erro observado no conjunto de treinamento. Já o risco esperado ou funcional está associado ao erro esperado em dados novos, dependendo da distribuição dos pares entrada-saída. A Teoria de Aprendizagem Estatística busca controlar ambos: minimizar o erro de treinamento e evitar funções excessivamente complexas que generalizem mal.</div></div>
+
+<div class="card question"><strong>Questão 4.</strong> Explique o papel da dimensão VC na teoria de aprendizagem estatística.
+<div class="answer"><strong>Resposta modelo:</strong> A dimensão VC mede a capacidade ou complexidade de um conjunto de funções classificadoras. Ela está relacionada ao maior número de pontos que pode ser separado corretamente em todas as possíveis rotulações binárias. Quanto maior a dimensão VC, maior a capacidade do modelo, mas também maior o risco de sobreajuste se não houver dados suficientes.</div></div>
+
+<div class="card question"><strong>Questão 5.</strong> Por que o kernel é importante em SVMs?
+<div class="answer"><strong>Resposta modelo:</strong> O kernel é importante porque permite calcular o produto interno entre dados no espaço de características sem calcular explicitamente o mapeamento Φ. Assim, dados que não são linearmente separáveis no espaço original podem ser tratados como separáveis em um espaço transformado de maior dimensão, mantendo o cálculo viável.</div></div>
+
+<div class="card question"><strong>Questão 6.</strong> Explique a diferença entre margem rígida e margem flexível.
+<div class="answer"><strong>Resposta modelo:</strong> A margem rígida assume que os dados são linearmente separáveis e não permite violações da margem. A margem flexível introduz variáveis de folga ξ para permitir que alguns pontos fiquem dentro da margem ou até sejam classificados incorretamente, penalizando essas violações por meio do parâmetro C.</div></div>
+
+<h2 id="pseudocodigo">7. Pseudocódigo</h2>
+<div class="card likely"><strong>Provável de cair:</strong> Mesmo que SVM seja matemática, o professor pode pedir a sequência conceitual de treinamento: definir dados, escolher kernel, resolver otimização, identificar vetores de suporte e classificar novos pontos.</div>
+<h3>7.1 Pseudocódigo conceitual de treinamento de uma SVM</h3>
+<pre>Entrada: conjunto de treinamento com pares (xᵢ, dᵢ), parâmetro C e função kernel K
+Saída: classificador SVM treinado
+
+1. Receber os exemplos de treinamento e seus rótulos binários.
+2. Escolher se o problema será tratado como linear ou com kernel.
+3. Definir a função objetivo da SVM.
+4. Definir as restrições de separação ou de margem flexível.
+5. Resolver o problema de otimização quadrática.
+6. Encontrar os multiplicadores de Lagrange αᵢ.
+7. Identificar os exemplos com αᵢ diferente de zero como vetores de suporte.
+8. Calcular o bias b.
+9. Construir a função de decisão.
+10. Para um novo exemplo, calcular o sinal da função de decisão e atribuir a classe.</pre>
+
+<h3>7.2 Explicação linha por linha</h3>
+<table>
+<thead><tr><th>Linha</th><th>Explicação</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>O treinamento começa com exemplos rotulados, pois a SVM é apresentada na aula principalmente como método supervisionado.</td></tr>
+<tr><td>2</td><td>Se os dados forem linearmente separáveis, pode-se usar hiperplano linear; se não forem, usa-se kernel/mapeamento.</td></tr>
+<tr><td>3</td><td>A função objetivo expressa o que será otimizado, como maximizar a margem e penalizar violações.</td></tr>
+<tr><td>4</td><td>As restrições garantem que os pontos estejam classificados corretamente ou controlam violações pela margem flexível.</td></tr>
+<tr><td>5</td><td>A SVM resolve um problema de programação quadrática convexo.</td></tr>
+<tr><td>6</td><td>Os multiplicadores de Lagrange aparecem na forma dual do problema.</td></tr>
+<tr><td>7</td><td>Os vetores de suporte são os pontos que efetivamente determinam o classificador.</td></tr>
+<tr><td>8</td><td>O bias desloca o hiperplano para posicionar corretamente a fronteira.</td></tr>
+<tr><td>9</td><td>A função de decisão combina pesos, rótulos, kernels e bias.</td></tr>
+<tr><td>10</td><td>A classe de um novo ponto é dada pelo sinal da função de decisão.</td></tr>
+</tbody>
+</table>
+
+<h3>7.3 Pseudocódigo para SVM multiclasse por um-contra-todos</h3>
+<pre>Entrada: conjunto de treinamento com k classes
+Saída: classificador multiclasse
+
+1. Para cada classe c entre as k classes:
+2.     Rotular exemplos da classe c como positivos.
+3.     Rotular exemplos das demais classes como negativos.
+4.     Treinar uma SVM binária para separar c das demais classes.
+5. Fim do Para
+6. Para classificar um novo exemplo:
+7.     Aplicar todos os k classificadores.
+8.     Escolher a classe com maior evidência/voto conforme o critério adotado.</pre>
+
+<h2 id="mini">8. Mini-simulado</h2>
+<div class="card question"><strong>1. Conceitual.</strong> O que a SVM tenta otimizar ao escolher o hiperplano separador?</div>
+<div class="card question"><strong>2. Conceitual.</strong> O que significa dizer que uma SVM tem função objetivo convexa?</div>
+<div class="card question"><strong>3. Conceitual.</strong> Explique por que aumentar muito a complexidade de uma função separadora pode ser ruim.</div>
+<div class="card question"><strong>4. Comparação.</strong> Compare SVM de margem rígida, margem flexível e SVM com kernel.</div>
+<div class="card question"><strong>5. Pseudocódigo/algoritmo.</strong> Descreva os passos conceituais para treinar uma SVM com kernel.</div>
+
+<h2 id="gabarito">9. Gabarito comentado</h2>
+<div class="card answer"><strong>1.</strong> A SVM tenta encontrar o hiperplano que separa as classes com a maior margem possível, minimizando a norma de <code>w</code> e controlando erros de treinamento. A margem maior tende a melhorar a generalização.</div>
+<div class="card answer"><strong>2.</strong> Significa que o problema de otimização possui uma superfície com apenas um ótimo global. Isso é uma vantagem em relação a métodos que podem ficar presos em vários mínimos locais.</div>
+<div class="card answer"><strong>3.</strong> Aumentar demais a complexidade pode fazer o classificador memorizar detalhes, ruídos ou particularidades do conjunto de treinamento. Isso reduz o erro de treinamento, mas pode aumentar o erro em dados novos, caracterizando overfitting.</div>
+<div class="card answer"><strong>4.</strong> A margem rígida exige separabilidade linear perfeita. A margem flexível permite violações por variáveis de folga e penalização controlada por C. A SVM com kernel trata problemas não lineares ao calcular similaridades em um espaço de características sem explicitar o mapeamento.</div>
+<div class="card answer"><strong>5.</strong> Escolhem-se dados rotulados, define-se uma função kernel, formula-se o problema dual com restrições, resolve-se a otimização quadrática, identificam-se os vetores de suporte, calcula-se o bias e classifica-se um novo ponto pelo sinal da função de decisão com kernel.</div>
+
+<h2>10. Checklist final de revisão</h2>
+<div class="card memorize">
+<span class="pill">SVM = margem máxima</span>
+<span class="pill">Vetores de suporte determinam a fronteira</span>
+<span class="pill">Risco esperado ≤ risco empírico + complexidade</span>
+<span class="pill">Dimensão VC mede complexidade</span>
+<span class="pill">Kernel evita calcular Φ explicitamente</span>
+<span class="pill">Margem flexível usa ξ e C</span>
+<span class="pill">Multiclasse: um-contra-todos ou um-contra-um</span>
+</div>
+
+</section>
+</main>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 07.2 — Autoencoders | Simulado</title>
+<style>
+:root{--bg:#f7f7f4;--paper:#fff;--ink:#1f2937;--muted:#667085;--brand:#8b0000;--brand2:#b42318;--border:#e5e7eb;--fall:#fff3cd;--dec:#e9f5ff;--ent:#eef8ee;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.6}.container{max-width:900px;margin:0 auto;padding:32px 18px 64px}.paper{background:var(--paper);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 8px 24px rgba(0,0,0,.06)}h1{font-size:2.1rem;color:var(--brand);line-height:1.15;margin:0 0 8px}h2{color:var(--brand);border-top:2px solid var(--border);padding-top:24px;margin-top:34px}h3{color:#344054;margin-top:22px}.meta{color:var(--muted);margin-bottom:22px}.tag{display:inline-block;background:#fee4e2;color:#912018;padding:4px 9px;border-radius:999px;font-weight:bold;font-size:.82rem;margin:4px 4px 4px 0}.card{border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 0;background:#fff}.likely{border-left:6px solid #f79009;background:var(--fall)}.memorize{border-left:6px solid #1570ef;background:var(--dec)}.understand{border-left:6px solid #12b76a;background:var(--ent)}.question{border-left:5px solid var(--brand2);background:#fffafa}.answer{background:#f9fafb;border-left:4px solid #98a2b3;padding:12px 14px;border-radius:8px;margin-top:10px}table{width:100%;border-collapse:collapse;margin:14px 0;overflow:auto}th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{background:#f2f4f7}code,pre{background:#f2f4f7;border-radius:8px}pre{padding:14px;white-space:pre-wrap;overflow:auto}.toc{background:#f9fafb;border:1px solid var(--border);padding:16px;border-radius:12px}.toc a{color:var(--brand);text-decoration:none}.formula{font-family:Georgia,serif;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin:10px 0}.small{font-size:.92rem;color:var(--muted)}@media print{body{background:white}.container{padding:0}.paper{box-shadow:none;border:0;border-radius:0}.card{break-inside:avoid}h2{break-after:avoid}a{color:inherit;text-decoration:none}}
+</style>
+</head>
+<body>
+<main class="container">
+<section class="paper">
+<h1>Aula 07.2 — Aprendizagem Profunda: Autoencoders</h1>
+<p class="meta">Arquivo-base: <strong>RN-07-deep-learning-modelo-02-autoencoder.pdf</strong>. Tema: autoencoder profundo, PCA, autoencoder empilhado, treinamento greedy layer-wise, autoencoder esparso, convolucional e denoising.</p>
+<div class="toc"><strong>Sumário rápido</strong><br>
+<a href="#resumo">Resumo essencial</a> · <a href="#conceitos">Conceitos principais</a> · <a href="#detalhes">Detalhes bobos</a> · <a href="#formulas">Fórmulas</a> · <a href="#comparacoes">Comparações</a> · <a href="#questoes">Questões</a> · <a href="#pseudocodigo">Pseudocódigo</a> · <a href="#simulado">Mini-simulado</a> · <a href="#gabarito">Gabarito</a></div>
+
+<h2 id="resumo">1. Resumo essencial</h2>
+<p>Autoencoders são redes neurais não supervisionadas usadas para aprender representações dos dados. A ideia central é receber uma entrada, compactá-la em uma representação latente e depois reconstruir a entrada original a partir dessa representação. A rede aprende bons parâmetros quando consegue reconstruir a entrada com erro pequeno.</p>
+<p>O conteúdo do slide relaciona autoencoders com redução de dimensionalidade, PCA e aprendizagem profunda. O PCA faz uma transformação linear que preserva variância; já autoencoders podem aprender mapeamentos não-lineares e representações hierárquicas, especialmente quando empilhados.</p>
+<div class="card likely"><strong>Provável de cair:</strong> definir autoencoder, explicar codificador/decodificador/espaço latente, comparar PCA com autoencoder, descrever treinamento greedy layer-wise e diferenciar autoencoder esparso, convolucional e denoising.</div>
+
+<h2 id="conceitos">2. Conceitos principais que podem cair</h2>
+<div class="card understand"><strong>Autoencoder:</strong> modelo não supervisionado que aprende a reconstruir a própria entrada. Ele força a rede a descobrir características úteis para representar os dados.</div>
+<div class="card understand"><strong>Codificador:</strong> parte da rede que transforma a entrada em uma representação compacta no espaço latente.</div>
+<div class="card understand"><strong>Decodificador:</strong> parte da rede que tenta reconstruir a entrada original a partir da representação latente.</div>
+<div class="card understand"><strong>Espaço latente:</strong> representação interna compactada da entrada. É onde a rede guarda as características mais importantes para reconstrução.</div>
+<div class="card understand"><strong>Autoencoder profundo:</strong> autoencoder com várias camadas escondidas, capaz de aprender representações hierárquicas.</div>
+<div class="card understand"><strong>Autoencoder empilhado:</strong> vários autoencoders treinados em sequência. O código aprendido por uma camada vira entrada para a próxima.</div>
+<div class="card understand"><strong>Treinamento greedy layer-wise:</strong> treinamento camada por camada. Primeiro treina-se uma camada, fixa-se seus parâmetros, usa-se sua saída para treinar a próxima e, no fim, faz-se ajuste fino supervisionado.</div>
+<div class="card understand"><strong>Autoencoder esparso:</strong> adiciona penalização para evitar muitas ativações nos nodos escondidos. Assim, poucos nodos ficam ativos por vez.</div>
+<div class="card understand"><strong>Autoencoder convolucional:</strong> usa compartilhamento de pesos para reduzir parâmetros e aproveitar estrutura espacial, como em imagens.</div>
+<div class="card understand"><strong>Denoising Autoencoder:</strong> recebe entrada corrompida por ruído e aprende a reconstruir a versão limpa ou menos ruidosa.</div>
+
+<h2 id="detalhes">3. Detalhes “bobos” que o professor pode cobrar</h2>
+<ul>
+<li>Autoencoders são <strong>não supervisionados</strong>.</li>
+<li>O objetivo é reconstruir a saída o mais próxima possível da entrada.</li>
+<li>Um autoencoder linear aprende representação equivalente ao <strong>PCA</strong>.</li>
+<li>Autoencoders podem ter capacidade de generalização mais poderosa que PCA por serem não-lineares.</li>
+<li>Se a camada escondida for grande demais, pode ocorrer solução trivial: a rede apenas copia a entrada.</li>
+<li>Para forçar compressão, a camada escondida deve ser menor que a entrada.</li>
+<li>As saídas reconstruídas podem ser degradadas em relação às entradas originais.</li>
+<li>No stacked autoencoder, o código gerado por um autoencoder é repassado como entrada para o próximo.</li>
+<li>Depois do treinamento camada a camada, a última camada pode ser treinada de forma supervisionada.</li>
+<li>No ajuste fino final, todos os pesos são liberados para treinamento supervisionado da rede inteira.</li>
+<li>O DAE corrompe aleatoriamente a entrada por ruído para evitar aprender a função identidade.</li>
+</ul>
+<div class="card memorize"><strong>Decorar:</strong> Encoder compacta; decoder reconstrói; espaço latente é a representação compactada; treinamento greedy layer-wise treina uma camada por vez.</div>
+
+<h2 id="formulas">4. Fórmulas importantes</h2>
+<h3>Codificação e decodificação no autoencoder</h3>
+<div class="formula">h(x) = g(a(x)) = sigm(b + Wx)<br>\hat{x} = o(\hat{a}(x)) = sigm(c + W* h(x))</div>
+<p><strong>Termos:</strong> <code>x</code> é a entrada; <code>h(x)</code> é a representação codificada; <code>W</code> são os pesos do codificador; <code>b</code> é o bias do codificador; <code>c</code> é o bias do decodificador; <code>W*</code> pode aparecer como pesos amarrados, no slide indicado como <code>W* = Wᵀ</code>; <code>\hat{x}</code> é a reconstrução.</p>
+<h3>Função de custo para entradas reais</h3>
+<div class="formula">J(W,b;x,y) = 1/2 ||h<sub>W,b</sub>(x) - y||²</div>
+<p>Essa função mede o erro quadrático entre a saída reconstruída e o alvo. Em um autoencoder, geralmente o alvo é a própria entrada.</p>
+<h3>Entropia cruzada de Bernoulli para entradas binárias</h3>
+<div class="formula">R = -Σ<sub>i</sub> x<sub>i</sub> log p<sub>i</sub>(x) + (1 - x<sub>i</sub>) log(1 - p<sub>i</sub>(x))</div>
+<p>Usada quando as entradas são binárias. O slide associa esta função a entradas com valores binários.</p>
+<h3>Reconstrução no Denoising Autoencoder</h3>
+<div class="formula">L(x, g(f(x)))</div>
+<p>Representa a perda entre a entrada original <code>x</code> e a reconstrução obtida após codificação <code>f</code> e decodificação <code>g</code>. No DAE, a rede recebe uma versão corrompida, mas busca reconstruir o sinal não corrompido.</p>
+<h3>Penalização por esparsidade</h3>
+<div class="formula">Erro total = erro de reconstrução + Ω(h)</div>
+<p><code>Ω(h)</code> é a penalização por esparsidade citada no slide. Ela pune muitas ativações nos nodos escondidos, incentivando poucos nodos ativos por vez.</p>
+
+<h2>5. Funções de ativação</h2>
+<p>O slide cita principalmente a função <strong>sigmoide</strong> dentro das fórmulas do encoder e decoder.</p>
+<table>
+<thead><tr><th>Função</th><th>Fórmula</th><th>Intervalo de saída</th><th>Vantagem</th><th>Desvantagem</th><th>Quando usar</th></tr></thead>
+<tbody>
+<tr><td>Sigmoide</td><td>sigm(v)=1/(1+e<sup>-v</sup>)</td><td>(0,1)</td><td>Útil para representar valores normalizados ou binários.</td><td>Pode saturar e reduzir gradientes.</td><td>No slide, aparece nas fórmulas de codificação e reconstrução para entradas binárias.</td></tr>
+</tbody>
+</table>
+
+<h2 id="comparacoes">6. Comparações importantes</h2>
+<table>
+<thead><tr><th>Tema</th><th>PCA</th><th>Autoencoder</th></tr></thead>
+<tbody>
+<tr><td>Tipo de transformação</td><td>Linear.</td><td>Pode ser não-linear.</td></tr>
+<tr><td>Objetivo</td><td>Reduzir dimensionalidade preservando variância.</td><td>Aprender representação compacta que permita reconstruir a entrada.</td></tr>
+<tr><td>Características geradas</td><td>Combinações lineares das variáveis originais.</td><td>Representações aprendidas por rede neural.</td></tr>
+<tr><td>Limitação</td><td>Não modela bem mapeamentos não-lineares.</td><td>Pode copiar a entrada se a arquitetura for grande demais ou mal regularizada.</td></tr>
+</tbody>
+</table>
+<table>
+<thead><tr><th>Modelo</th><th>Ideia central</th><th>Vantagem</th><th>Cuidado</th></tr></thead>
+<tbody>
+<tr><td>Autoencoder básico</td><td>Reconstruir a própria entrada.</td><td>Aprende representação compacta.</td><td>Evitar solução identidade trivial.</td></tr>
+<tr><td>Stacked Autoencoder</td><td>Empilhar autoencoders e treinar camada por camada.</td><td>Facilita treinamento de redes profundas.</td><td>Exige etapa final de ajuste fino.</td></tr>
+<tr><td>Esparso</td><td>Penaliza muitas ativações.</td><td>Pode aprender codificação esparsa mesmo com camada maior.</td><td>Depende da penalização Ω(h).</td></tr>
+<tr><td>Convolucional</td><td>Usa pesos compartilhados e regiões locais.</td><td>Reduz parâmetros e explora imagens.</td><td>Depende de conhecimento prévio espacial.</td></tr>
+<tr><td>Denoising</td><td>Reconstrói sinal limpo a partir de entrada com ruído.</td><td>Evita aprender só identidade e melhora robustez.</td><td>É preciso definir como corromper a entrada.</td></tr>
+</tbody>
+</table>
+
+<h2 id="questoes">7. Possíveis questões de prova + respostas modelo</h2>
+<div class="card question"><strong>Q1. Defina autoencoder e explique sua estrutura.</strong><div class="answer">Um autoencoder é uma rede neural não supervisionada que aprende a reconstruir sua própria entrada. Sua estrutura possui um codificador, que compacta a entrada em uma representação latente, e um decodificador, que tenta reconstruir a entrada original a partir dessa representação. O aprendizado ocorre minimizando o erro entre entrada e saída reconstruída.</div></div>
+<div class="card question"><strong>Q2. Por que a camada escondida menor que a entrada ajuda no aprendizado?</strong><div class="answer">Porque impede que a rede simplesmente copie a entrada. Com menos nodos na camada escondida, a rede é forçada a criar uma representação compacta, preservando apenas características relevantes para reconstruir a entrada.</div></div>
+<div class="card question"><strong>Q3. Compare PCA e autoencoder.</strong><div class="answer">PCA é um método linear de redução de dimensionalidade que cria novas variáveis por combinação linear das originais e busca preservar a variância dos dados. Autoencoders também podem reduzir dimensionalidade, mas são redes neurais que aprendem representações por reconstrução e podem capturar mapeamentos não-lineares. Um autoencoder linear tende a aprender representação equivalente ao PCA.</div></div>
+<div class="card question"><strong>Q4. O que é treinamento greedy layer-wise?</strong><div class="answer">É um treinamento camada por camada. Primeiro treina-se a primeira camada com dados sem rótulo; depois seus parâmetros são fixados e sua saída vira entrada para treinar a próxima camada. O processo se repete até a quantidade desejada de camadas. No final, adiciona-se uma camada supervisionada e, depois, libera-se a rede inteira para ajuste fino supervisionado.</div></div>
+<div class="card question"><strong>Q5. Explique o Denoising Autoencoder.</strong><div class="answer">O Denoising Autoencoder recebe uma versão corrompida da entrada, normalmente com ruído, e aprende a reconstruir a versão limpa ou menos ruidosa. Isso reduz o risco de a rede aprender apenas a função identidade, pois ela precisa capturar a estrutura dos dados para remover a corrupção.</div></div>
+
+<h2 id="pseudocodigo">8. Pseudocódigo</h2>
+<h3>Treinamento greedy layer-wise de um Stacked Autoencoder</h3>
+<pre>Entrada: conjunto de dados sem rótulos X, número de camadas L
+Saída: rede profunda pré-treinada e ajustada
+
+1. Defina EntradaAtual ← X
+2. Para cada camada l de 1 até L faça:
+   2.1. Crie um autoencoder para a camada l
+   2.2. Treine o autoencoder para reconstruir EntradaAtual
+   2.3. Guarde os pesos do codificador da camada l
+   2.4. Calcule CódigoAtual usando o codificador treinado
+   2.5. Defina EntradaAtual ← CódigoAtual
+3. Empilhe os codificadores treinados para formar a rede profunda
+4. Adicione uma camada/modelo supervisionado na saída
+5. Treine a camada supervisionada usando os rótulos disponíveis
+6. Libere todos os pesos da rede
+7. Realize ajuste fino supervisionado da rede completa</pre>
+<h3>Explicação linha por linha</h3>
+<ol>
+<li><strong>Linha 1:</strong> começa usando os dados originais como entrada da primeira camada.</li>
+<li><strong>Linha 2:</strong> treina uma camada por vez, evitando treinar a rede profunda inteira de uma só vez.</li>
+<li><strong>Linha 2.2:</strong> o autoencoder aprende a reconstruir sua entrada, descobrindo características úteis.</li>
+<li><strong>Linha 2.3:</strong> apenas a parte codificadora é aproveitada para construir a rede profunda.</li>
+<li><strong>Linha 2.4:</strong> gera a representação compacta aprendida pela camada atual.</li>
+<li><strong>Linha 2.5:</strong> essa representação vira entrada para a próxima camada.</li>
+<li><strong>Linha 3:</strong> os codificadores empilhados formam a arquitetura profunda.</li>
+<li><strong>Linha 4:</strong> adiciona-se uma saída supervisionada, por exemplo um classificador.</li>
+<li><strong>Linha 5:</strong> treina-se a parte final com rótulos.</li>
+<li><strong>Linha 6 e 7:</strong> libera-se a rede completa para ajuste fino, melhorando os pesos de todas as camadas.</li>
+</ol>
+
+<h2 id="simulado">9. Mini-simulado</h2>
+<div class="card question"><strong>1. Conceitual:</strong> O que um autoencoder aprende?</div>
+<div class="card question"><strong>2. Conceitual:</strong> Explique a diferença entre codificador, espaço latente e decodificador.</div>
+<div class="card question"><strong>3. Conceitual:</strong> Por que autoencoders são úteis quando há muitos dados não rotulados?</div>
+<div class="card question"><strong>4. Comparação:</strong> Compare PCA e autoencoder em termos de linearidade e representação.</div>
+<div class="card question"><strong>5. Algoritmo:</strong> Descreva o treinamento greedy layer-wise de um stacked autoencoder.</div>
+
+<h2 id="gabarito">10. Gabarito comentado</h2>
+<div class="card"><strong>1.</strong> Aprende uma representação dos dados que permite reconstruir a entrada. O objetivo não é prever um rótulo, mas minimizar a diferença entre entrada e reconstrução.</div>
+<div class="card"><strong>2.</strong> O codificador compacta a entrada; o espaço latente é a representação compactada; o decodificador usa essa representação para reconstruir a entrada original.</div>
+<div class="card"><strong>3.</strong> Porque o treinamento básico não precisa de rótulos. A própria entrada funciona como alvo de reconstrução, permitindo aprender características úteis de dados não rotulados.</div>
+<div class="card"><strong>4.</strong> PCA é linear e preserva variância por combinação linear das variáveis. Autoencoder é uma rede neural que pode aprender representações não-lineares por reconstrução. Um autoencoder linear se aproxima da ideia do PCA.</div>
+<div class="card"><strong>5.</strong> Treina-se a primeira camada como autoencoder; fixa-se seus parâmetros; usa-se sua saída como entrada da próxima camada; repete-se o processo; adiciona-se uma camada supervisionada; por fim, libera-se a rede inteira para ajuste fino supervisionado.</div>
+
+<h2>11. Checklist final para revisão</h2>
+<ul>
+<li>Sei definir autoencoder em uma frase.</li>
+<li>Sei explicar encoder, decoder e espaço latente.</li>
+<li>Sei comparar PCA e autoencoder.</li>
+<li>Sei explicar por que uma camada escondida menor força compressão.</li>
+<li>Sei descrever treinamento greedy layer-wise.</li>
+<li>Sei diferenciar esparso, convolucional e denoising.</li>
+</ul>
+</section>
+</main>
+</body>
+</html>

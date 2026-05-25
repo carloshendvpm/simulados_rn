@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Aula 30 — Redes Recorrentes Supervisionadas</title><style>
+:root{--bg:#f7f7f4;--paper:#fff;--ink:#1f2937;--muted:#667085;--brand:#8b0000;--brand2:#b42318;--border:#e5e7eb;--fall:#fff3cd;--dec:#e9f5ff;--ent:#eef8ee;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.6}.container{max-width:900px;margin:0 auto;padding:32px 18px 64px}.paper{background:var(--paper);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 8px 24px rgba(0,0,0,.06)}h1{font-size:2.05rem;color:var(--brand);line-height:1.15;margin:0 0 8px}h2{color:var(--brand);border-top:2px solid var(--border);padding-top:24px;margin-top:34px}h3{color:#344054;margin-top:22px}.meta{color:var(--muted);margin-bottom:22px}.tag{display:inline-block;background:#fee4e2;color:#912018;padding:4px 9px;border-radius:999px;font-weight:bold;font-size:.82rem;margin:4px 4px 4px 0}.card{border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 0;background:#fff}.likely{border-left:6px solid #f79009;background:var(--fall)}.memorize{border-left:6px solid #1570ef;background:var(--dec)}.understand{border-left:6px solid #12b76a;background:var(--ent)}.question{border-left:5px solid var(--brand2);background:#fffafa}.answer{background:#f9fafb;border-left:4px solid #98a2b3;padding:12px 14px;border-radius:8px;margin-top:10px}table{width:100%;border-collapse:collapse;margin:14px 0;overflow:auto}th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{background:#f2f4f7}code,pre{background:#f2f4f7;border-radius:8px}pre{padding:14px;white-space:pre-wrap;overflow:auto}.toc{background:#f9fafb;border:1px solid var(--border);padding:16px;border-radius:12px}.toc a{color:var(--brand);text-decoration:none}.formula{font-family:Georgia,serif;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin:10px 0}.small{font-size:.92rem;color:var(--muted)}.lesson-list{list-style:none;padding:0}.lesson-list li{background:#fff;border:1px solid var(--border);border-radius:14px;margin:12px 0;padding:16px}.lesson-list a{font-size:1.1rem;font-weight:bold;color:var(--brand);text-decoration:none}.status{display:inline-block;font-size:.8rem;background:#ecfdf3;color:#027a48;border-radius:999px;padding:3px 8px;margin-left:6px}@media print{body{background:white}.container{padding:0}.paper{box-shadow:none;border:0;border-radius:0}a{color:inherit;text-decoration:none}.card{break-inside:avoid}h2{break-after:avoid}}
+</style></head>
+<body><main class="container"><section class="paper">
+<h1>Aula 30 — Redes Recorrentes Supervisionadas</h1>
+<p class="meta">Simulado e guia de revisão gerado a partir do slide <strong>RN-30-redes-recorrentes-sup</strong>.</p>
+<div class="toc"><strong>Navegação rápida</strong><br>
+<a href="#resumo">Resumo essencial</a> · <a href="#conceitos">Conceitos principais</a> · <a href="#formulas">Fórmulas</a> · <a href="#comparacoes">Comparações</a> · <a href="#pseudo">Pseudocódigo</a> · <a href="#questoes">Questões</a> · <a href="#mini">Mini-simulado</a> · <a href="#gabarito">Gabarito</a>
+</div>
+<h2 id="resumo">1. Resumo essencial</h2>
+<p>Redes recorrentes supervisionadas são redes neurais que possuem <strong>laços de realimentação</strong>. Por causa desses laços, a resposta da rede não depende apenas da entrada atual, mas também de estados anteriores. Isso permite modelar sequências, séries temporais e sistemas dinâmicos.</p>
+<div class="card likely"><strong>Provável de cair:</strong> a ideia central de rede recorrente é a presença de realimentação, que cria memória/estado e torna a rede adequada para dados temporais.</div>
+<p>O slide apresenta o histórico das redes recorrentes, a diferença entre realimentação local e global, modelos como Jordan, Elman, NARX, modelo de espaço de estados, RMLP e rede de segunda ordem. Também aborda controlabilidade, observabilidade, poder computacional e treinamento por BPTT/RTRL.</p>
+
+<h2 id="conceitos">2. Conceitos principais que podem cair</h2>
+<div class="card understand"><strong>Entender:</strong> em uma rede feedforward, a informação flui da entrada para a saída. Em uma rede recorrente, parte da saída ou do estado retorna como entrada futura.</div>
+<ul>
+<li><strong>Rede recorrente:</strong> rede com um ou mais laços de realimentação.</li>
+<li><strong>Realimentação local:</strong> ocorre dentro de um nodo, saída ou sinapse específica.</li>
+<li><strong>Realimentação global:</strong> envolve partes maiores da rede, como camada escondida ou saída retornando para entrada/contexto.</li>
+<li><strong>Memória de curto prazo:</strong> unidades de contexto armazenam estados anteriores para influenciar a próxima saída.</li>
+<li><strong>Rede de Jordan:</strong> realimenta a saída para a entrada/contexto.</li>
+<li><strong>Rede de Elman:</strong> realimenta a camada escondida para a entrada/contexto.</li>
+<li><strong>NARX:</strong> modelo não-linear auto-regressivo com entradas exógenas; usa valores passados da entrada e da saída.</li>
+<li><strong>Modelo de espaço de estados:</strong> representa o sistema por estado, entrada e saída.</li>
+<li><strong>RMLP:</strong> MLP recorrente em que cada camada de processamento tem realimentação para ela própria.</li>
+<li><strong>Rede de segunda ordem:</strong> combina termos por multiplicação, usando pares {estado, entrada}; pode representar autômatos finitos determinísticos.</li>
+<li><strong>BPTT:</strong> retropropagação ao longo do tempo, obtida pelo desdobramento temporal da rede.</li>
+<li><strong>RTRL:</strong> aprendizagem recorrente em tempo real.</li>
+</ul>
+
+<h2>3. Detalhes “bobos” que o professor pode cobrar</h2>
+<div class="card memorize"><strong>Decorar:</strong> Jordan realimenta a <strong>saída</strong>; Elman realimenta a <strong>camada escondida</strong>.</div>
+<ul>
+<li>Redes recorrentes podem ter laços de realimentação <strong>locais</strong> ou <strong>globais</strong>.</li>
+<li>Uma rede totalmente recorrente permite que uma unidade possa realimentar qualquer outra.</li>
+<li>Uma rede parcialmente recorrente tem predominância de conexões feedforward e algumas conexões de realimentação.</li>
+<li>As unidades de contexto lembram o estado interno anterior.</li>
+<li>NARX significa <strong>Não-linear Auto-regressivo com Entradas Exógenas</strong>.</li>
+<li>Em NARX, a entrada da MLP recebe uma janela com valores presentes e passados de entrada e saída.</li>
+<li>Treinamento por época reseta a rede entre épocas; treinamento contínuo aprende durante o processamento do sinal.</li>
+<li>BPTT transforma a rede recorrente no tempo em uma rede feedforward desdobrada.</li>
+<li>RTRL usa erro instantâneo e erro total acumulado ao longo do tempo.</li>
+</ul>
+
+<h2 id="formulas">4. Fórmulas importantes</h2>
+<div class="formula"><strong>NARX:</strong><br>y(n+1) = F(y(n), ..., y(n-q+1), u(n), ..., u(n-q+1))</div>
+<p><strong>Termos:</strong> <code>y</code> representa a saída; <code>u</code> representa a entrada exógena; <code>q</code> é o tamanho da memória ou dimensão de atraso; <code>F</code> é o mapeamento não-linear aprendido pela rede.</p>
+<div class="formula"><strong>Modelo de espaço de estados:</strong><br>x(n+1) = φ(Wa x(n) + Wb u(n))<br>y(n) = Cx(n)</div>
+<p><strong>Termos:</strong> <code>x(n)</code> é o estado atual; <code>u(n)</code> é a entrada; <code>y(n)</code> é a saída; <code>Wa</code> controla a influência do estado anterior; <code>Wb</code> controla a influência da entrada; <code>C</code> mapeia estado para saída; <code>φ</code> é uma função não-linear.</p>
+<div class="formula"><strong>Rede de segunda ordem:</strong><br>v<sub>k</sub>(n) = b<sub>k</sub> + Σ<sub>i</sub>Σ<sub>j</sub> w<sub>kij</sub>x<sub>i</sub>(n)u<sub>j</sub>(n)<br>x<sub>k</sub>(n+1) = φ(v<sub>k</sub>(n)) = 1 / (1 + exp(-v<sub>k</sub>(n)))</div>
+<p><strong>Termos:</strong> o produto <code>x_i(n)u_j(n)</code> representa o par {estado, entrada}; pesos positivos indicam transição de estado e pesos negativos indicam ausência de transição.</p>
+<div class="formula"><strong>Erro em RTRL:</strong><br>e(n) = d(n) - y(n)<br>E(n) = 1/2 e<sup>T</sup>(n)e(n)<br>E<sub>Total</sub> = Σ<sub>n</sub>E(n)</div>
+<p><strong>Termos:</strong> <code>d(n)</code> é a saída desejada; <code>y(n)</code> é a saída da rede; <code>e(n)</code> é o erro instantâneo; <code>E(n)</code> é o erro quadrático no instante; <code>E_Total</code> soma os erros ao longo do tempo.</p>
+
+<h2 id="comparacoes">5. Comparações importantes</h2>
+<table><thead><tr><th>Modelo</th><th>Realimentação</th><th>Ideia principal</th><th>Possível questão de prova</th></tr></thead><tbody>
+<tr><td>Jordan</td><td>Saída → entrada/contexto</td><td>Usa a saída anterior como memória de curto prazo.</td><td>Explique como a rede Jordan usa memória.</td></tr>
+<tr><td>Elman</td><td>Camada escondida → entrada/contexto</td><td>Usa o estado interno escondido anterior.</td><td>Compare Jordan e Elman.</td></tr>
+<tr><td>NARX</td><td>Entradas e saídas atrasadas</td><td>Prediz saída futura com base em janelas temporais de entrada e saída.</td><td>Explique a fórmula do modelo NARX.</td></tr>
+<tr><td>Espaço de estados</td><td>Estado escondido realimentado</td><td>Representa sistema dinâmico por estado, entrada e saída.</td><td>O que é estado em um sistema dinâmico?</td></tr>
+<tr><td>RMLP</td><td>Cada camada se realimenta</td><td>MLP recorrente com realimentação nas camadas de processamento.</td><td>O que diferencia uma RMLP?</td></tr>
+<tr><td>Segunda ordem</td><td>Multiplicativa</td><td>Usa produto entre estado e entrada para representar transições.</td><td>Por que é chamada de segunda ordem?</td></tr>
+</tbody></table>
+<table><thead><tr><th>Treinamento</th><th>Como funciona</th><th>Quando aparece no slide</th></tr></thead><tbody>
+<tr><td>Por época</td><td>A rede executa de um estado inicial até novo estado; depois é parada e resetada.</td><td>Treinamento de redes recorrentes.</td></tr>
+<tr><td>Contínuo</td><td>A rede aprende enquanto processa o sinal.</td><td>Quando não há estados claros para resetar.</td></tr>
+<tr><td>BPTT</td><td>Desdobra a rede no tempo e aplica retropropagação.</td><td>Extensão do MLP-BP.</td></tr>
+<tr><td>RTRL</td><td>Aprendizagem em tempo real com erro instantâneo e erro total acumulado.</td><td>Treinamento online/tempo real.</td></tr>
+</tbody></table>
+
+<h2 id="pseudo">6. Pseudocódigo</h2>
+<h3>Pseudocódigo: treinamento conceitual com BPTT</h3>
+<pre>Inicializar os pesos da rede recorrente
+Para cada sequência de treinamento:
+    Definir o estado inicial da rede
+    Para cada instante de tempo da sequência:
+        Receber a entrada atual
+        Combinar entrada atual com estado anterior
+        Calcular novo estado escondido
+        Calcular saída da rede
+        Calcular erro em relação à saída desejada
+    Fim-Para
+
+    Desdobrar a rede ao longo dos instantes de tempo considerados
+    Propagar o erro de trás para frente no tempo
+    Calcular gradientes dos pesos recorrentes e não recorrentes
+    Atualizar os pesos para reduzir o erro total da sequência
+Fim-Para</pre>
+<h3>Explicação linha por linha</h3>
+<ol>
+<li><strong>Inicializar pesos:</strong> define os parâmetros que serão ajustados.</li>
+<li><strong>Para cada sequência:</strong> redes recorrentes lidam com dados temporais, então o exemplo pode ser uma sequência.</li>
+<li><strong>Estado inicial:</strong> a rede precisa começar de algum estado.</li>
+<li><strong>Entrada atual + estado anterior:</strong> essa é a essência da recorrência.</li>
+<li><strong>Novo estado escondido:</strong> representa a memória atualizada.</li>
+<li><strong>Saída:</strong> previsão no instante atual.</li>
+<li><strong>Erro:</strong> diferença entre saída desejada e saída produzida.</li>
+<li><strong>Desdobrar no tempo:</strong> transforma a recorrência em uma sequência de camadas equivalentes.</li>
+<li><strong>Propagar erro para trás no tempo:</strong> distribui a responsabilidade do erro pelos pesos usados nos instantes anteriores.</li>
+<li><strong>Atualizar pesos:</strong> ajusta os parâmetros para reduzir o erro total.</li>
+</ol>
+
+<h2 id="questoes">7. Possíveis questões de prova com respostas modelo</h2>
+<div class="card question"><strong>1. O que caracteriza uma rede neural recorrente?</strong><div class="answer">Uma rede neural recorrente é caracterizada pela presença de um ou mais laços de realimentação. Isso faz com que sua resposta dependa não apenas da entrada atual, mas também de estados anteriores, permitindo o uso de memória e a modelagem de sequências temporais.</div></div>
+<div class="card question"><strong>2. Compare as redes de Jordan e Elman.</strong><div class="answer">A rede de Jordan realimenta a saída para unidades de contexto na entrada, usando a saída anterior como memória. A rede de Elman realimenta a camada escondida para a entrada/contexto, usando o estado interno anterior. Ambas são redes recorrentes simples e podem ser usadas em tarefas sequenciais.</div></div>
+<div class="card question"><strong>3. Explique o modelo NARX.</strong><div class="answer">NARX é um modelo não-linear auto-regressivo com entradas exógenas. Ele prevê uma saída futura usando valores passados da própria saída e valores presentes/passados da entrada externa. A entrada da rede forma uma janela temporal com dados exógenos e dados regredidos.</div></div>
+<div class="card question"><strong>4. O que é o estado em um modelo de espaço de estados?</strong><div class="answer">O estado é um conjunto de variáveis que resume a situação atual de um sistema dinâmico. Ele resume a história relevante do sistema e, junto com a entrada atual, determina o comportamento futuro.</div></div>
+<div class="card question"><strong>5. Explique BPTT.</strong><div class="answer">BPTT, ou retropropagação ao longo do tempo, é uma extensão da retropropagação usada em redes recorrentes. A rede é desdobrada no tempo, formando uma rede feedforward equivalente com uma camada para cada instante temporal considerado, e o erro é propagado para trás ao longo desses instantes.</div></div>
+<div class="card question"><strong>6. Qual a diferença entre controlabilidade e observabilidade?</strong><div class="answer">Controlabilidade significa que um sistema pode ser levado de um estado para outro estado desejado em um número finito de passos. Observabilidade significa que o estado interno do sistema pode ser determinado a partir de um conjunto finito de medidas de entrada e saída.</div></div>
+
+<h2 id="mini">8. Mini-simulado</h2>
+<div class="card question"><strong>Questão 1 — Conceitual:</strong> Por que redes recorrentes são adequadas para sequências temporais?</div>
+<div class="card question"><strong>Questão 2 — Conceitual:</strong> O que são unidades de contexto em redes recorrentes simples?</div>
+<div class="card question"><strong>Questão 3 — Conceitual:</strong> Explique o papel da realimentação em redes recorrentes.</div>
+<div class="card question"><strong>Questão 4 — Comparação:</strong> Compare Jordan, Elman e NARX.</div>
+<div class="card question"><strong>Questão 5 — Algoritmo:</strong> Descreva, em pseudocódigo ou texto estruturado, como funciona o treinamento BPTT.</div>
+
+<h2 id="gabarito">9. Gabarito comentado</h2>
+<div class="card"><strong>Questão 1:</strong> Porque elas mantêm informação sobre estados anteriores por meio de realimentação. Assim, a saída pode depender da entrada atual e da história anterior da sequência.</div>
+<div class="card"><strong>Questão 2:</strong> São unidades que armazenam/copiam estados anteriores, como saída ou camada escondida anterior, permitindo memória de curto prazo.</div>
+<div class="card"><strong>Questão 3:</strong> A realimentação devolve informação da própria rede para etapas futuras de processamento. Isso cria dinâmica temporal e representação de estado.</div>
+<div class="card"><strong>Questão 4:</strong> Jordan realimenta a saída; Elman realimenta a camada escondida; NARX usa atrasos de entrada e saída para formar uma janela temporal e prever saídas futuras.</div>
+<div class="card"><strong>Questão 5:</strong> O BPTT inicializa pesos, processa a sequência passo a passo, calcula erros em cada instante, desdobra a rede no tempo, propaga o erro para trás pelos instantes e atualiza os pesos para reduzir o erro total.</div>
+
+<h2>10. Checklist final para prova</h2>
+<ul>
+<li>Sei definir rede recorrente?</li>
+<li>Sei diferenciar Jordan e Elman?</li>
+<li>Sei explicar NARX e sua fórmula?</li>
+<li>Sei explicar estado, entrada e saída no modelo de espaço de estados?</li>
+<li>Sei diferenciar BPTT e RTRL?</li>
+<li>Sei explicar controlabilidade e observabilidade?</li>
+</ul>
+<p class="small">Arquivo autossuficiente para revisão no navegador ou impressão.</p>
+</section></main></body></html>

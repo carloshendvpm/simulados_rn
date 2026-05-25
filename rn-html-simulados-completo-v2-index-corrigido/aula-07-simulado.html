@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 07 — Deep Learning e CNN | Simulado</title>
+<style>
+:root{--bg:#f7f7f4;--paper:#fff;--ink:#1f2937;--muted:#667085;--brand:#8b0000;--brand2:#b42318;--border:#e5e7eb;--fall:#fff3cd;--dec:#e9f5ff;--ent:#eef8ee;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.6}.container{max-width:900px;margin:0 auto;padding:32px 18px 64px}.paper{background:var(--paper);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 8px 24px rgba(0,0,0,.06)}h1{font-size:2.1rem;color:var(--brand);line-height:1.15;margin:0 0 8px}h2{color:var(--brand);border-top:2px solid var(--border);padding-top:24px;margin-top:34px}h3{color:#344054;margin-top:22px}.meta{color:var(--muted);margin-bottom:22px}.tag{display:inline-block;background:#fee4e2;color:#912018;padding:4px 9px;border-radius:999px;font-weight:bold;font-size:.82rem;margin:4px 4px 4px 0}.card{border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 0;background:#fff}.likely{border-left:6px solid #f79009;background:var(--fall)}.memorize{border-left:6px solid #1570ef;background:var(--dec)}.understand{border-left:6px solid #12b76a;background:var(--ent)}.question{border-left:5px solid var(--brand2);background:#fffafa}.answer{background:#f9fafb;border-left:4px solid #98a2b3;padding:12px 14px;border-radius:8px;margin-top:10px}table{width:100%;border-collapse:collapse;margin:14px 0;overflow:auto}th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{background:#f2f4f7}code,pre{background:#f2f4f7;border-radius:8px}pre{padding:14px;white-space:pre-wrap;overflow:auto}.toc{background:#f9fafb;border:1px solid var(--border);padding:16px;border-radius:12px}.toc a{color:var(--brand);text-decoration:none}.formula{font-family:Georgia,serif;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin:10px 0}.small{font-size:.92rem;color:var(--muted)}@media print{body{background:white}.container{padding:0}.paper{box-shadow:none;border:0;border-radius:0}.card{break-inside:avoid}h2{break-after:avoid}a{color:inherit;text-decoration:none}}
+</style>
+</head>
+<body>
+<main class="container">
+<section class="paper">
+<h1>Aula 07 — Aprendizagem Profunda e Redes Neurais Convolucionais</h1>
+<p class="meta">Arquivo-base: <strong>RN-07-deep-learning-modelo-01-CNN.pdf</strong>. Tema: motivação para Deep Learning, CNNs, convolução, ReLU, pooling, campos receptivos, pesos compartilhados e treinamento.</p>
+<div class="toc"><strong>Sumário rápido</strong><br>
+<a href="#resumo">Resumo essencial</a> · <a href="#conceitos">Conceitos principais</a> · <a href="#detalhes">Detalhes bobos</a> · <a href="#formulas">Fórmulas</a> · <a href="#ativacoes">Funções de ativação</a> · <a href="#comparacoes">Comparações</a> · <a href="#questoes">Questões</a> · <a href="#pseudocodigo">Pseudocódigo</a> · <a href="#simulado">Mini-simulado</a> · <a href="#gabarito">Gabarito</a></div>
+
+<h2 id="resumo">1. Resumo essencial</h2>
+<p>Aprendizagem profunda busca aprender representações em múltiplos níveis de abstração. Em vez de depender de características criadas manualmente, a rede aprende transformações sucessivas: de pixels brutos para bordas, de bordas para formas locais e de formas para categorias. Isso é especialmente importante em imagens, fala e problemas de alta dimensionalidade.</p>
+<p>As CNNs são uma extensão das MLPs tradicionais projetada para dados com estrutura espacial, principalmente imagens. Elas usam três ideias centrais: <strong>campos receptivos locais</strong>, <strong>pesos compartilhados</strong> e <strong>subamostragem/pooling</strong>. A sequência típica é: convolução, não-linearidade, pooling, novas convoluções e, ao final, camadas totalmente conectadas para classificação.</p>
+<div class="card likely"><strong>Provável de cair:</strong> explicar por que deep learning usa várias camadas, o que é convolução em CNN, qual o papel de ReLU e pooling, e por que pesos compartilhados reduzem o número de parâmetros.</div>
+
+<h2 id="conceitos">2. Conceitos principais que podem cair</h2>
+<div class="card understand"><strong>Aprendizagem profunda:</strong> aprende representações hierárquicas. Camadas iniciais aprendem características simples, como bordas; camadas posteriores combinam essas características em padrões mais abstratos.</div>
+<div class="card understand"><strong>Maldição da dimensionalidade:</strong> em dados de alta dimensão, o espaço cresce rapidamente e modelos tradicionais podem precisar de muitos dados ou parâmetros. CNNs reduzem esse problema ao explorar estrutura local e compartilhamento de pesos.</div>
+<div class="card understand"><strong>Difusão/desaparecimento do gradiente:</strong> em redes profundas antigas, o gradiente propagado para camadas iniciais ficava muito pequeno, dificultando o treinamento dessas camadas.</div>
+<div class="card understand"><strong>CNN:</strong> rede que combina convolução, não-linearidade, subamostragem e camadas finais de classificação. A rede aprende filtros automaticamente.</div>
+<div class="card understand"><strong>Convolução:</strong> operação que aplica um filtro/kernel sobre regiões locais da entrada, produzindo mapas de características.</div>
+<div class="card understand"><strong>Pooling:</strong> reduz a resolução dos mapas de características, comprimindo os dados e tornando a representação mais robusta a pequenas variações espaciais.</div>
+<div class="card understand"><strong>Campos receptivos locais:</strong> cada neurônio observa apenas uma região local da entrada ou do mapa anterior.</div>
+<div class="card understand"><strong>Pesos compartilhados:</strong> o mesmo filtro é aplicado em várias posições da entrada. Isso reduz parâmetros e permite detectar a mesma característica em posições diferentes.</div>
+
+<h2 id="detalhes">3. Detalhes “bobos” que o professor pode cobrar</h2>
+<ul>
+<li>Operações básicas de uma CNN: <strong>convolução</strong>, <strong>inserção de não-linearidade</strong> e <strong>subamostragem</strong>.</li>
+<li>ReLU significa <em>Rectified Linear Unit</em> e é definida como <code>f(x)=max(0,x)</code>.</li>
+<li>Leaky ReLU usa <code>f(x)=x</code> se <code>x&gt;0</code>, caso contrário <code>ax</code>, com <code>0 ≤ a ≤ 1</code>.</li>
+<li>Pooling normalmente usa <strong>média</strong> ou <strong>máximo</strong> em regiões disjuntas.</li>
+<li>Parâmetros comuns de convolução: margem/padding, tamanho do kernel, stride, quantidade de filtros e valores aprendidos dos filtros.</li>
+<li>Os filtros são inicializados aleatoriamente e aprendidos pelo algoritmo.</li>
+<li>Na CNN, os pesos dos filtros são os mesmos em diferentes regiões do mapa.</li>
+<li>A convolução é uma operação linear; a não-linearidade é adicionada depois, por exemplo com ReLU.</li>
+<li>CNNs de sucesso citadas: <strong>LeNet</strong>, <strong>AlexNet</strong>, <strong>VGGNet</strong> e <strong>ResNet</strong>.</li>
+<li>Hubel e Wiesel observaram células simples e complexas no córtex visual, inspiração para filtros locais e invariância.</li>
+</ul>
+<div class="card memorize"><strong>Decorar:</strong> CNN = campos receptivos locais + pesos compartilhados + subamostragem espaço-temporal.</div>
+
+<h2 id="formulas">4. Fórmulas importantes</h2>
+<h3>Convolução contínua</h3>
+<div class="formula">(f ∗ g)(x) = h(x) = ∫<sub>-∞</sub><sup>∞</sup> f(u) · g(x-u) du</div>
+<p><strong>Termos:</strong> <code>f</code> e <code>g</code> são funções; <code>g(x-u)</code> representa a função deslocada/invertida; o resultado <code>h(x)</code> mede a sobreposição entre elas para cada deslocamento.</p>
+<h3>Convolução discreta</h3>
+<div class="formula">(f ∗ g)(k) = h(k) = Σ<sub>j=0</sub><sup>k</sup> f(j) · g(k-j)</div>
+<p><strong>Termos:</strong> <code>k</code> é a posição discreta; <code>j</code> percorre os índices; o resultado soma produtos entre os valores da entrada e do filtro deslocado.</p>
+<h3>Convolução 2D em imagens</h3>
+<div class="formula">g<sub>f</sub>(l,p) = Σ<sub>m=-int(w/2)</sub><sup>int(w/2)</sup> Σ<sub>n=-int(w/2)</sub><sup>int(w/2)</sup> g(l+m,p+n)h(m,n)</div>
+<p><strong>Termos:</strong> <code>g</code> é a imagem, <code>h</code> é a máscara/kernel, <code>w</code> é a largura da janela, e <code>(l,p)</code> é a posição onde o filtro está sendo aplicado.</p>
+<h3>Tamanho da saída da camada convolucional</h3>
+<div class="formula">W₂ = (W₁ - F + 2P)/S + 1<br>H₂ = (H₁ - F + 2P)/S + 1<br>D₂ = K</div>
+<p><strong>Termos:</strong> <code>W₁,H₁,D₁</code> são largura, altura e profundidade da entrada; <code>F</code> é o tamanho espacial do filtro; <code>P</code> é o padding; <code>S</code> é o stride; <code>K</code> é o número de filtros.</p>
+<h3>Número de pesos em uma convolução</h3>
+<div class="formula">Total de pesos = (F · F · D₁) · K + K biases</div>
+<p>Cada filtro tem dimensão <code>F × F × D₁</code>. Como há <code>K</code> filtros, multiplica-se por <code>K</code>. Cada filtro também possui um bias.</p>
+<h3>Tamanho da saída da camada de pooling</h3>
+<div class="formula">W₂ = (W₁ - F)/S + 1<br>H₂ = (H₁ - F)/S + 1<br>D₂ = D₁</div>
+<p>No pooling, em geral não há padding e não há parâmetros treináveis. A profundidade é preservada.</p>
+<h3>Erro total no exemplo de CNN</h3>
+<div class="formula">Erro total = Σ ½(probabilidade desejada - probabilidade de saída)²</div>
+<p>Usado no slide para indicar a soma do erro nas classes de saída antes da retropropagação.</p>
+
+<h2 id="ativacoes">5. Funções de ativação citadas</h2>
+<table>
+<thead><tr><th>Função</th><th>Fórmula</th><th>Intervalo de saída</th><th>Vantagem</th><th>Desvantagem</th><th>Quando usar</th></tr></thead>
+<tbody>
+<tr><td>ReLU</td><td>f(x)=max(0,x)</td><td>[0,∞)</td><td>Simples, derivada constante para valores positivos, ajuda no treinamento de redes profundas.</td><td>Para x≤0 a saída é zero; unidades podem ficar inativas.</td><td>Muito usada após convoluções para inserir não-linearidade.</td></tr>
+<tr><td>Leaky ReLU</td><td>f(x)=x se x&gt;0; f(x)=ax se x≤0, 0≤a≤1</td><td>(-∞,∞), com inclinação pequena no lado negativo</td><td>Evita derivada zero no lado negativo.</td><td>Exige escolher o parâmetro a.</td><td>Quando se quer reduzir o problema de unidades ReLU “mortas”.</td></tr>
+<tr><td>Sigmoide</td><td>f(x)=1/(1+e<sup>-x</sup>)</td><td>(0,1)</td><td>Útil quando se deseja saída limitada.</td><td>Pode saturar e contribuir para gradiente pequeno.</td><td>O slide cita sigmoide em exemplos de camadas antigas/subamostragem.</td></tr>
+</tbody>
+</table>
+<div class="card likely"><strong>Provável de cair:</strong> comparar ReLU e Leaky ReLU, principalmente a ideia de que a Leaky ReLU mantém uma inclinação no lado negativo para não zerar completamente a derivada.</div>
+
+<h2 id="comparacoes">6. Comparações importantes</h2>
+<h3>Redes rasas vs redes profundas</h3>
+<table><thead><tr><th>Aspecto</th><th>Rede rasa</th><th>Rede profunda</th></tr></thead><tbody>
+<tr><td>Formato citado</td><td>“Gorda e baixa”</td><td>“Magra e alta”</td></tr>
+<tr><td>Representação</td><td>Tende a precisar de muitos nodos para funções complexas.</td><td>Representa funções variáveis por composição de camadas.</td></tr>
+<tr><td>Aprendizado de características</td><td>Menos hierárquico.</td><td>Aprende características de baixa, média e alta ordem.</td></tr>
+<tr><td>Risco</td><td>Pode sofrer com dimensionalidade e necessidade de pré-processamento.</td><td>Pode sofrer com gradiente desaparecendo e treinamento mais complexo.</td></tr>
+</tbody></table>
+<h3>MLP tradicional vs CNN</h3>
+<table><thead><tr><th>Aspecto</th><th>MLP tradicional</th><th>CNN</th></tr></thead><tbody>
+<tr><td>Conectividade</td><td>Frequentemente totalmente conectada.</td><td>Conectividade local/esparsa.</td></tr>
+<tr><td>Pesos</td><td>Cada conexão pode ter peso próprio.</td><td>Pesos compartilhados por filtros.</td></tr>
+<tr><td>Entrada típica</td><td>Vetores gerais.</td><td>Imagens, sinais e dados com estrutura espacial/temporal.</td></tr>
+<tr><td>Parâmetros</td><td>Pode ter muitos parâmetros.</td><td>Reduz parâmetros com filtros locais compartilhados.</td></tr>
+<tr><td>Invariância</td><td>Menos adequada a deslocamentos locais.</td><td>Pooling ajuda a dar robustez a pequenas variações espaciais.</td></tr>
+</tbody></table>
+<h3>Convolução vs pooling</h3>
+<table><thead><tr><th>Operação</th><th>Objetivo</th><th>Parâmetros treináveis?</th><th>Resultado</th></tr></thead><tbody>
+<tr><td>Convolução</td><td>Extrair características locais com filtros.</td><td>Sim, os pesos dos filtros são aprendidos.</td><td>Mapas de características.</td></tr>
+<tr><td>Pooling</td><td>Comprimir e suavizar os dados.</td><td>Não, computa função fixa como máximo ou média.</td><td>Mapas menores e mais robustos.</td></tr>
+</tbody></table>
+
+<h2 id="questoes">7. Possíveis questões de prova e respostas modelo</h2>
+<div class="card question"><strong>Questão 1.</strong> Por que aprendizagem profunda pode ser vantajosa em relação a uma rede rasa?</div>
+<div class="answer">Porque redes profundas aprendem representações em múltiplos níveis de abstração. Em imagens, por exemplo, camadas iniciais podem detectar bordas, camadas intermediárias combinam bordas em formas e camadas finais combinam formas em categorias. Assim, funções complexas podem ser representadas de modo mais eficiente do que em uma rede rasa que precisaria de muitos nodos.</div>
+<div class="card question"><strong>Questão 2.</strong> Explique as três ideias que caracterizam uma CNN.</div>
+<div class="answer">Uma CNN usa campos receptivos locais, pesos compartilhados e subamostragem. Campos receptivos locais fazem cada neurônio observar apenas uma região da entrada. Pesos compartilhados aplicam o mesmo filtro em várias posições, reduzindo parâmetros e detectando a mesma característica em locais diferentes. A subamostragem/pooling reduz a resolução dos mapas e torna a rede mais robusta a pequenas variações espaciais.</div>
+<div class="card question"><strong>Questão 3.</strong> O que é pooling e por que ele é usado?</div>
+<div class="answer">Pooling é uma operação de agrupamento que toma regiões do mapa de características e calcula, por exemplo, o valor máximo ou a média. Ele reduz a dimensão dos dados, suaviza a representação e dá robustez a pequenas translações ou variações espaciais.</div>
+<div class="card question"><strong>Questão 4.</strong> O que significa dizer que filtros de uma CNN são aprendidos?</div>
+<div class="answer">Significa que os valores do kernel/filtro não são definidos manualmente como regras fixas. Eles são inicializados aleatoriamente e ajustados durante o treinamento por retropropagação e gradiente descendente, de acordo com sua contribuição para reduzir o erro da saída.</div>
+<div class="card question"><strong>Questão 5.</strong> Qual a diferença entre ReLU e Leaky ReLU?</div>
+<div class="answer">A ReLU retorna zero para entradas negativas e retorna a própria entrada para valores positivos. A Leaky ReLU também retorna a própria entrada quando x&gt;0, mas para valores negativos retorna ax, com uma inclinação pequena. Isso evita que a derivada fique totalmente nula no lado negativo.</div>
+
+<h2 id="pseudocodigo">8. Pseudocódigo — Treinamento básico de uma CNN</h2>
+<pre>Algoritmo: Treinamento básico de uma CNN
+Entrada: conjunto de imagens de treinamento, rótulos desejados, arquitetura da CNN
+Saída: filtros e pesos ajustados
+
+1. Inicializar filtros, pesos e biases com valores aleatórios
+2. Repetir por várias épocas:
+3.     Para cada imagem de treinamento:
+4.         Aplicar convolução nos mapas de entrada
+5.         Aplicar função de ativação, como ReLU
+6.         Aplicar pooling para reduzir os mapas de características
+7.         Repetir convolução, ativação e pooling nas camadas seguintes, se houver
+8.         Linearizar os mapas finais, se necessário
+9.         Propagar pelas camadas totalmente conectadas
+10.        Calcular as probabilidades ou saídas para cada classe
+11.        Calcular o erro entre saída desejada e saída obtida
+12.        Retropropagar o erro pela rede
+13.        Atualizar pesos, filtros e biases por gradiente descendente
+14.    Fim-para
+15. Fim-repetir
+16. Retornar os parâmetros aprendidos</pre>
+<h3>Explicação linha por linha</h3>
+<table><thead><tr><th>Linha</th><th>Explicação</th></tr></thead><tbody>
+<tr><td>1</td><td>Os filtros começam aleatórios, por isso as primeiras saídas também são praticamente aleatórias.</td></tr>
+<tr><td>2</td><td>O treinamento repete várias passagens pelo conjunto de dados.</td></tr>
+<tr><td>3</td><td>Cada imagem é apresentada à rede.</td></tr>
+<tr><td>4</td><td>Os filtros são aplicados localmente para gerar mapas de características.</td></tr>
+<tr><td>5</td><td>A não-linearidade permite que a rede modele relações mais complexas.</td></tr>
+<tr><td>6</td><td>Pooling reduz a dimensão e aumenta a robustez a pequenas variações.</td></tr>
+<tr><td>7</td><td>Camadas seguintes aprendem características mais abstratas.</td></tr>
+<tr><td>8</td><td>Os mapas são transformados em vetor para a parte final de classificação.</td></tr>
+<tr><td>9</td><td>Camadas totalmente conectadas combinam evidências extraídas pelos filtros.</td></tr>
+<tr><td>10</td><td>A rede produz uma saída por classe, como probabilidades.</td></tr>
+<tr><td>11</td><td>O erro mede a diferença entre o que a rede produziu e o rótulo esperado.</td></tr>
+<tr><td>12</td><td>A retropropagação calcula quanto cada peso contribuiu para o erro.</td></tr>
+<tr><td>13</td><td>Gradiente descendente ajusta os parâmetros para reduzir o erro.</td></tr>
+<tr><td>16</td><td>Ao final, filtros e pesos representam o conhecimento aprendido.</td></tr>
+</tbody></table>
+
+<h2 id="simulado">9. Mini-simulado</h2>
+<div class="card question"><strong>Conceitual 1.</strong> Explique a motivação para usar aprendizagem profunda em imagens.</div>
+<div class="card question"><strong>Conceitual 2.</strong> Defina campo receptivo local em uma CNN.</div>
+<div class="card question"><strong>Conceitual 3.</strong> Por que a convolução sozinha não basta e é comum adicionar uma não-linearidade?</div>
+<div class="card question"><strong>Comparação.</strong> Compare convolução e pooling quanto ao objetivo e aos parâmetros treináveis.</div>
+<div class="card question"><strong>Algoritmo.</strong> Escreva um pseudocódigo resumido da etapa de treinamento de uma CNN usando convolução, ReLU, pooling, cálculo de erro e retropropagação.</div>
+
+<h2 id="gabarito">10. Gabarito comentado</h2>
+<div class="answer"><strong>Conceitual 1:</strong> Em imagens, a entrada bruta possui muitos pixels e grande variabilidade. Deep learning permite transformar pixels em representações progressivamente mais abstratas, como bordas, formas e categorias, reduzindo a dependência de pré-processamento manual.</div>
+<div class="answer"><strong>Conceitual 2:</strong> Campo receptivo local é a região limitada da entrada ou do mapa anterior observada por um neurônio. Ele permite que a CNN foque em correlações espaciais próximas.</div>
+<div class="answer"><strong>Conceitual 3:</strong> A convolução é linear. Sem não-linearidade, várias camadas lineares poderiam se comportar como uma transformação linear composta. A ReLU ou outra ativação permite modelar funções mais complexas.</div>
+<div class="answer"><strong>Comparação:</strong> Convolução extrai características locais e possui filtros treináveis. Pooling reduz a resolução dos mapas, normalmente por máximo ou média, e não introduz parâmetros treináveis.</div>
+<div class="answer"><strong>Algoritmo:</strong> Uma resposta boa deve conter: inicialização aleatória dos filtros; passagem direta com convolução, ReLU e pooling; camadas de classificação; cálculo do erro; retropropagação; atualização dos filtros e pesos; repetição para as imagens e épocas.</div>
+<div class="card memorize"><strong>Última revisão antes da prova:</strong> memorize a sequência <em>convolução → ReLU → pooling → camadas totalmente conectadas → erro → backpropagation</em>, e saiba explicar por que campos receptivos locais e pesos compartilhados tornam CNNs adequadas para imagens.</div>
+</section>
+</main>
+</body>
+</html>
