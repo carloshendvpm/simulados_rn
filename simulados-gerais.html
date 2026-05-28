@@ -1,0 +1,141 @@
+<!doctype html><html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Simulados Gerais — Redes Neurais</title><style>
+:root{--bg:#f7f7f4;--paper:#fff;--ink:#1f2937;--muted:#667085;--brand:#8b0000;--brand2:#b42318;--border:#e5e7eb;--fall:#fff3cd;--dec:#e9f5ff;--ent:#eef8ee;--ok:#ecfdf3;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.6}.container{max-width:900px;margin:0 auto;padding:32px 18px 64px}.paper{background:var(--paper);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 8px 24px rgba(0,0,0,.06)}h1{font-size:2.05rem;color:var(--brand);line-height:1.15;margin:0 0 8px}h2{color:var(--brand);border-top:2px solid var(--border);padding-top:24px;margin-top:34px}h3{color:#344054;margin-top:22px}.meta{color:var(--muted);margin-bottom:22px}.tag{display:inline-block;background:#fee4e2;color:#912018;padding:4px 9px;border-radius:999px;font-weight:bold;font-size:.82rem;margin:4px 4px 4px 0}.card{border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 0;background:#fff}.likely{border-left:6px solid #f79009;background:var(--fall)}.memorize{border-left:6px solid #1570ef;background:var(--dec)}.understand{border-left:6px solid #12b76a;background:var(--ent)}.question{border-left:5px solid var(--brand2);background:#fffafa}.answer{background:#f9fafb;border-left:4px solid #98a2b3;padding:12px 14px;border-radius:8px;margin-top:10px}table{width:100%;border-collapse:collapse;margin:14px 0;overflow:auto}th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{background:#f2f4f7}code,pre{background:#f2f4f7;border-radius:8px}pre{padding:14px;white-space:pre-wrap;overflow:auto}.toc{background:#f9fafb;border:1px solid var(--border);padding:16px;border-radius:12px}.toc a{color:var(--brand);text-decoration:none}.formula{font-family:Georgia,serif;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin:10px 0}.small{font-size:.92rem;color:var(--muted)}.lesson-list{list-style:none;padding:0}.lesson-list li{background:#fff;border:1px solid var(--border);border-radius:14px;margin:12px 0;padding:16px}.lesson-list a{font-size:1.1rem;font-weight:bold;color:var(--brand);text-decoration:none}.status{display:inline-block;font-size:.8rem;background:#ecfdf3;color:#027a48;border-radius:999px;padding:3px 8px;margin-left:6px}.pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:3px 8px;margin:2px;background:#fff}.navtop{margin-bottom:18px}.navtop a{color:var(--brand);font-weight:bold;text-decoration:none}.break{page-break-before:always}@media print{body{background:white}.container{padding:0}.paper{box-shadow:none;border:0;border-radius:0}a{color:inherit;text-decoration:none}.card{break-inside:avoid}h2{break-after:avoid}.break{page-break-before:always}}
+</style></head><body><main class="container"><section class="paper">
+<div class="navtop"><a href="index.html">← Voltar ao índice</a></div>
+<h1>Simulados Gerais — Redes Neurais</h1>
+<p class="meta">Quatro versões de prova com 8 questões cada, focadas nos conteúdos mais prováveis: comparações, fórmulas e pseudocódigo.</p>
+<div class="card likely"><strong>Provável de cair:</strong> comparar modelos, explicar fórmulas com cada termo, e escrever pseudocódigo de algoritmos como SOM, PCA, MLP-BP, K-means para RBF e GAN.</div>
+<div class="card memorize"><strong>Como treinar:</strong> tente resolver cada versão sem consultar o gabarito. Depois compare com a resposta modelo discursiva.</div>
+<div class="toc"><strong>Versões:</strong><br>
+<a href="#versao-a">Versão A</a> · <a href="#versao-b">Versão B</a> · <a href="#versao-c">Versão C</a> · <a href="#versao-d">Versão D</a>
+</div>
+
+<h2 id="versao-a">Prova — Versão A</h2>
+<div class="card likely"><strong>Foco da versão:</strong> MLP-BP, RBF, SOM, PCA, LSTM, GAN e CNN.</div>
+
+<div class="card question"><h3>Questão 1 — Comparação: MLP-BP x RBF</h3><p>Compare uma rede MLP-BP com uma rede RBF considerando: função de ativação na camada escondida, forma de treinamento, generalização, velocidade de treinamento e tipo de região de decisão.</p><div class="answer"><strong>Resposta modelo:</strong> A MLP-BP usa funções de ativação como sigmoide, tanh ou ReLU nas camadas escondidas e ajusta pesos por retropropagação do erro. Seu ajuste é mais global, o que pode favorecer extrapolação e generalização quando há poucos dados. A RBF usa funções de base radial, geralmente gaussianas, cuja ativação depende da distância entre a entrada e um centro. Seu treinamento costuma ser mais rápido porque pode separar a escolha dos centros, larguras e pesos de saída. A RBF faz ajuste local, sendo forte em interpolação e classificação com regiões locais. Enquanto a MLP tende a formar separações por hiperplanos combinados, a RBF tende a formar regiões locais como hiperesferas ou hiperelipsoides.</div></div>
+
+<div class="card question"><h3>Questão 2 — Fórmula: erro e atualização na MLP-BP</h3><p>Explique as fórmulas:</p><div class="formula">e<sub>k</sub>(n) = t<sub>k</sub>(n) − y<sub>k</sub>(n)<br>E(n) = 1/2 Σ<sub>k∈C</sub> e<sub>k</sub><sup>2</sup>(n)<br>Δw<sub>kj</sub> = ηδ<sub>k</sub>z<sub>j</sub></div><div class="answer"><strong>Resposta modelo:</strong> A primeira fórmula define o erro da unidade de saída, comparando o alvo desejado com a saída produzida pela rede. A segunda mede o erro instantâneo total como soma dos erros quadráticos; o fator 1/2 facilita a derivação. A terceira é a atualização do peso: η é a taxa de aprendizagem, δ<sub>k</sub> é o gradiente local associado ao erro da unidade e z<sub>j</sub> é a saída da unidade anterior. O peso muda proporcionalmente à contribuição da conexão para o erro.</div></div>
+
+<div class="card question"><h3>Questão 3 — Pseudocódigo: SOM</h3><p>Escreva um pseudocódigo para o treinamento de um Mapa Auto-organizável.</p><pre>Inicializar os vetores de pesos dos nodos do mapa
+Definir taxa de aprendizagem inicial
+Definir raio inicial de vizinhança
+Enquanto o critério de parada não for atingido:
+    Para cada vetor de entrada x:
+        Calcular a distância entre x e cada vetor de pesos wj
+        Escolher o nodo vencedor v com menor distância
+        Determinar a vizinhança topológica em torno de v
+        Para cada nodo j na vizinhança:
+            Atualizar wj na direção de x:
+            wj ← wj + η(n) h(j,v,n) [x − wj]
+    Reduzir gradualmente η(n)
+    Reduzir gradualmente o raio da vizinhança
+Fim</pre><div class="answer"><strong>Resposta modelo:</strong> O SOM aprende por competição, adaptação e cooperação. Primeiro, os nodos competem para identificar o vencedor, isto é, o vetor de pesos mais próximo da entrada. Depois, o vencedor e seus vizinhos são movidos na direção da amostra. Com o passar das épocas, a taxa de aprendizagem e a vizinhança diminuem, permitindo que o mapa preserve a organização topológica dos dados.</div></div>
+
+<div class="card question"><h3>Questão 4 — Comparação: PCA x Autoencoder</h3><p>Compare PCA e Autoencoder como métodos de redução de dimensionalidade.</p><div class="answer"><strong>Resposta modelo:</strong> PCA é um método estatístico linear que encontra direções de máxima variância nos dados, usando matriz de covariância, autovalores e autovetores. Ele reduz dimensionalidade projetando os dados nos componentes principais. Autoencoder é uma rede neural não supervisionada que aprende a reconstruir a entrada na saída. Quando possui uma camada latente menor, é forçado a aprender uma representação compacta. Diferente do PCA, pode aprender relações não lineares. Um autoencoder linear tende a aprender representação semelhante à do PCA.</div></div>
+
+<div class="card question"><h3>Questão 5 — Fórmula: função gaussiana em RBF</h3><p>Explique a função:</p><div class="formula">y<sub>j</sub>(x<sub>p</sub>) = exp( − ||x<sub>p</sub> − μ<sub>j</sub>||² / 2σ<sub>j</sub>² )</div><div class="answer"><strong>Resposta modelo:</strong> Essa é a ativação gaussiana da unidade escondida j em uma RBF. x<sub>p</sub> é o vetor de entrada, μ<sub>j</sub> é o centro ou protótipo, e σ<sub>j</sub> é a largura do campo receptivo. Quanto mais perto a entrada estiver do centro, maior será a ativação. Quanto maior σ, mais larga e menos localizada será a resposta; quanto menor σ, mais seletiva e localizada será a unidade.</div></div>
+
+<div class="card question"><h3>Questão 6 — Comparação: RNN simples x LSTM</h3><p>Explique por que LSTM é mais adequada que uma RNN simples para dependências de longo prazo.</p><div class="answer"><strong>Resposta modelo:</strong> RNNs simples sofrem com desaparecimento ou explosão do gradiente durante a retropropagação ao longo do tempo. Isso dificulta aprender relações entre eventos distantes. LSTM usa célula de memória e gates de entrada, saída e esquecimento. Esses mecanismos controlam o que entra, o que sai e o que é esquecido, permitindo manter informação relevante por muitos passos temporais.</div></div>
+
+<div class="card question"><h3>Questão 7 — GAN: gerador x discriminador</h3><p>Explique o funcionamento de uma GAN destacando gerador, discriminador e jogo minimax.</p><div class="answer"><strong>Resposta modelo:</strong> Uma GAN possui duas redes em competição. O gerador recebe ruído z e produz uma amostra falsa G(z) parecida com os dados reais. O discriminador recebe amostras reais e geradas e tenta classificá-las como reais ou falsas. O treinamento é minimax: o discriminador tenta maximizar sua capacidade de distinguir as amostras, enquanto o gerador tenta minimizar essa capacidade, enganando o discriminador. O equilíbrio ocorre quando a distribuição gerada se aproxima da real e o discriminador responde próximo de 0,5.</div></div>
+
+<div class="card question"><h3>Questão 8 — CNN: operações principais</h3><p>Explique convolução, não linearidade e pooling em uma CNN.</p><div class="answer"><strong>Resposta modelo:</strong> A convolução aplica filtros sobre regiões locais da entrada para extrair características como bordas, texturas e formas. A não linearidade, como ReLU, permite que a rede represente relações complexas, evitando que tudo se reduza a transformações lineares. O pooling reduz a resolução dos mapas de características, normalmente por máximo ou média, aumentando robustez a pequenas variações espaciais e reduzindo custo computacional.</div></div>
+
+<h2 id="versao-b" class="break">Prova — Versão B</h2>
+<div class="card likely"><strong>Foco da versão:</strong> SVM, SOM, CNN, Autoencoder, LSTM e GAN.</div>
+
+<div class="card question"><h3>Questão 1 — SVM: margem rígida x margem flexível</h3><p>Compare SVM de margem rígida e SVM de margem flexível.</p><div class="answer"><strong>Resposta modelo:</strong> A margem rígida pressupõe dados linearmente separáveis e busca um hiperplano que separe perfeitamente as classes, maximizando a margem. A margem flexível é usada quando há ruído ou sobreposição entre classes. Ela introduz variáveis de folga ξ<sub>i</sub>, permitindo violações da margem ou classificações incorretas. O parâmetro C controla o compromisso entre margem ampla e penalização dos erros.</div></div>
+
+<div class="card question"><h3>Questão 2 — Fórmula: margem da SVM</h3><p>Explique a relação:</p><div class="formula">ρ = 2 / ||w||</div><div class="answer"><strong>Resposta modelo:</strong> A fórmula representa a distância entre os hiperplanos de suporte. O vetor w é normal ao hiperplano separador. Maximizar ρ equivale a minimizar ||w||. Por isso, a SVM resolve um problema de otimização que minimiza 1/2 w<sup>T</sup>w sujeito às restrições de classificação. Margens maiores tendem a melhorar a generalização.</div></div>
+
+<div class="card question"><h3>Questão 3 — Pseudocódigo: treinamento de GAN</h3><p>Escreva um pseudocódigo simplificado para treinar uma GAN.</p><pre>Inicializar parâmetros do gerador G
+Inicializar parâmetros do discriminador D
+Enquanto não convergir:
+    Amostrar dados reais do conjunto de treinamento
+    Amostrar vetores de ruído z
+    Gerar exemplos falsos G(z)
+    Treinar D para classificar reais como reais e G(z) como falsos
+    Amostrar novos vetores de ruído z
+    Gerar novos exemplos G(z)
+    Treinar G para fazer D classificar G(z) como real
+Fim</pre><div class="answer"><strong>Resposta modelo:</strong> O treinamento alterna entre melhorar o discriminador e melhorar o gerador. O discriminador aprende a separar real de falso. O gerador aprende indiretamente, tentando produzir amostras que o discriminador classifique como reais.</div></div>
+
+<div class="card question"><h3>Questão 4 — Comparação: SOM x PCA</h3><p>Compare SOM e PCA como técnicas de representação de dados.</p><div class="answer"><strong>Resposta modelo:</strong> PCA é uma técnica linear que projeta os dados em componentes de maior variância. É baseada em estatística e álgebra linear. SOM é uma rede neural não supervisionada que mapeia dados de alta dimensão em uma grade discreta, preservando relações topológicas. PCA reduz dimensionalidade por projeção linear; SOM organiza protótipos por competição, cooperação e adaptação.</div></div>
+
+<div class="card question"><h3>Questão 5 — Fórmula: atualização do SOM</h3><p>Explique:</p><div class="formula">w<sub>j</sub>(n+1) = w<sub>j</sub>(n) + η(n)h<sub>j,v</sub>(n)[x − w<sub>j</sub>(n)]</div><div class="answer"><strong>Resposta modelo:</strong> w<sub>j</sub> é o vetor de pesos do nodo j. x é a entrada. η(n) é a taxa de aprendizagem, que diminui com o tempo. h<sub>j,v</sub>(n) é a função de vizinhança centrada no vencedor v. O termo [x − w<sub>j</sub>] move o peso em direção à entrada. O vencedor recebe maior ajuste, e vizinhos recebem ajustes menores.</div></div>
+
+<div class="card question"><h3>Questão 6 — Comparação: CNN x MLP totalmente conectada</h3><p>Por que CNN é mais adequada para imagens?</p><div class="answer"><strong>Resposta modelo:</strong> CNN explora a estrutura espacial das imagens por campos receptivos locais, pesos compartilhados e pooling. Isso reduz parâmetros e permite detectar padrões locais em diferentes posições. Uma MLP totalmente conectada transforma a imagem em vetor, perde a organização espacial e exige muitos pesos, aumentando custo e risco de overfitting.</div></div>
+
+<div class="card question"><h3>Questão 7 — Autoencoder: solução trivial</h3><p>Por que um autoencoder muito grande pode aprender uma solução trivial?</p><div class="answer"><strong>Resposta modelo:</strong> Se a camada escondida tiver capacidade excessiva, a rede pode apenas copiar a entrada para a saída, sem aprender características relevantes. Para evitar isso, usa-se gargalo dimensional, penalização por esparsidade, ruído em denoising autoencoders ou restrições arquiteturais.</div></div>
+
+<div class="card question"><h3>Questão 8 — LSTM: gates</h3><p>Explique os três gates principais da LSTM.</p><div class="answer"><strong>Resposta modelo:</strong> O gate de esquecimento decide quanto do estado anterior será mantido. O gate de entrada decide quais novas informações serão adicionadas à célula. O gate de saída decide qual parte do estado da célula será exposta como estado oculto. Juntos, eles controlam o fluxo de informação e permitem memória de longo prazo.</div></div>
+
+<h2 id="versao-c" class="break">Prova — Versão C</h2>
+<div class="card likely"><strong>Foco da versão:</strong> aprendizagem supervisionada/não supervisionada, PCA, GAN, MLP-BP, redes recorrentes, LSTM, RBF e CNN.</div>
+
+<div class="card question"><h3>Questão 1 — Comparação: aprendizagem supervisionada x não supervisionada</h3><p>Compare os dois tipos usando exemplos dos slides.</p><div class="answer"><strong>Resposta modelo:</strong> Na aprendizagem supervisionada, os dados possuem alvos ou rótulos, e o objetivo é aprender uma função entrada-saída. Exemplos: MLP-BP, SVM, CNN para classificação e LSTM em tarefas rotuladas de sequência. Na não supervisionada, os dados não têm rótulos, e o objetivo é descobrir estrutura ou representação. Exemplos: PCA, SOM e Autoencoders.</div></div>
+
+<div class="card question"><h3>Questão 2 — Fórmula: PCA pelo método da covariância</h3><p>Explique o procedimento básico do PCA pelo método da covariância.</p><div class="formula">B = X − uh<sup>T</sup><br>C = (1/(N−1))BB<sup>T</sup></div><div class="answer"><strong>Resposta modelo:</strong> Primeiro organiza-se os dados em X, com observações em colunas. Calcula-se o vetor de médias u e subtrai-se essa média de cada coluna, formando B. Depois calcula-se a matriz de covariância C. Em seguida encontram-se autovalores e autovetores de C. Os autovetores associados aos maiores autovalores indicam as direções de maior variância, usadas para projetar os dados em menor dimensão.</div></div>
+
+<div class="card question"><h3>Questão 3 — Comparação: modelo discriminativo x generativo</h3><p>Compare os dois conceitos.</p><div class="answer"><strong>Resposta modelo:</strong> Modelos discriminativos aprendem a separar classes ou estimar p(y|x), respondendo qual rótulo corresponde a uma entrada. SVM, MLP e CNN classificadora são exemplos. Modelos generativos aprendem a distribuição dos dados, como p(x) ou p(x,y), permitindo gerar novas amostras. GANs são generativas porque produzem dados sintéticos semelhantes aos reais.</div></div>
+
+<div class="card question"><h3>Questão 4 — Pseudocódigo: MLP-BP</h3><p>Escreva o pseudocódigo do treinamento de uma MLP por retropropagação.</p><pre>Inicializar pesos e biases aleatoriamente
+Enquanto erro médio for insatisfatório:
+    Para cada padrão de treinamento:
+        Propagar a entrada para frente
+        Calcular ativações das camadas escondidas
+        Calcular a saída da rede
+        Calcular erro entre saída desejada e obtida
+        Calcular gradientes da camada de saída
+        Propagar erro para camadas escondidas
+        Atualizar pesos e biases pelo gradiente descendente
+Fim</pre><div class="answer"><strong>Resposta modelo:</strong> O algoritmo possui uma fase forward, que calcula a saída, e uma fase backward, que propaga o erro da saída para as camadas anteriores. Os pesos são atualizados para reduzir o erro.</div></div>
+
+<div class="card question"><h3>Questão 5 — Comparação: BPTT x RTRL</h3><p>Compare BPTT e RTRL no treinamento de redes recorrentes.</p><div class="answer"><strong>Resposta modelo:</strong> BPTT desdobra a rede recorrente no tempo, transformando cada passo temporal em uma camada de uma rede feedforward. O erro é então retropropagado ao longo dessa estrutura. RTRL atualiza os pesos em tempo real enquanto a sequência é processada, sendo mais associado a aprendizagem online. BPTT é uma extensão natural do backpropagation; RTRL é voltado a atualização contínua.</div></div>
+
+<div class="card question"><h3>Questão 6 — Fórmulas: LSTM</h3><p>Explique as equações:</p><div class="formula">f<sub>t</sub> = σ(W<sub>f</sub>[h<sub>t−1</sub>,x<sub>t</sub>] + b<sub>f</sub>)<br>i<sub>t</sub> = σ(W<sub>i</sub>[h<sub>t−1</sub>,x<sub>t</sub>] + b<sub>i</sub>)<br>C<sub>t</sub> = f<sub>t</sub>C<sub>t−1</sub> + i<sub>t</sub>C̃<sub>t</sub><br>h<sub>t</sub> = o<sub>t</sub>tanh(C<sub>t</sub>)</div><div class="answer"><strong>Resposta modelo:</strong> f<sub>t</sub> decide o que esquecer do estado anterior. i<sub>t</sub> decide o que inserir na célula. C̃<sub>t</sub> é o conteúdo candidato. C<sub>t</sub> combina memória antiga e informação nova. o<sub>t</sub> controla a saída, e h<sub>t</sub> é o estado oculto produzido pela célula.</div></div>
+
+<div class="card question"><h3>Questão 7 — RBF: aprendizagem exata x centros por agrupamento</h3><p>Compare as duas estratégias.</p><div class="answer"><strong>Resposta modelo:</strong> Na aprendizagem exata, cada padrão de treinamento pode virar um centro RBF, garantindo ajuste perfeito no treino, mas com baixa generalização e muitos nodos. Com centros por agrupamento, como K-means ou SOM, usa-se menos centros, representando regiões dos dados. Isso reduz complexidade e tende a melhorar a generalização, embora dependa da qualidade dos agrupamentos.</div></div>
+
+<div class="card question"><h3>Questão 8 — Fórmula: tamanho da saída convolucional</h3><p>Explique:</p><div class="formula">W<sub>2</sub> = (W<sub>1</sub> − F + 2P)/S + 1</div><div class="answer"><strong>Resposta modelo:</strong> W<sub>2</sub> é a largura da saída. W<sub>1</sub> é a largura da entrada, F é o tamanho do filtro, P é o padding e S é o stride. Padding adiciona bordas, stride define o passo do filtro e F define a janela analisada. A mesma lógica vale para a altura.</div></div>
+
+<h2 id="versao-d" class="break">Prova — Versão D</h2>
+<div class="card likely"><strong>Foco da versão:</strong> overfitting, GAN, PCA, SOM, RNN/LSTM/NARX, funções de ativação e RBF.</div>
+
+<div class="card question"><h3>Questão 1 — Comparação: overfitting em MLP, Autoencoder e SVM</h3><p>Explique como o overfitting aparece nesses três modelos.</p><div class="answer"><strong>Resposta modelo:</strong> Na MLP, overfitting ocorre quando a rede memoriza o treino e perde desempenho em validação. No Autoencoder, uma arquitetura grande demais pode apenas copiar a entrada, sem aprender representação útil. Na SVM, overfitting pode ocorrer quando a fronteira se ajusta demais aos dados. A margem flexível e o parâmetro C ajudam a controlar esse equilíbrio.</div></div>
+
+<div class="card question"><h3>Questão 2 — Fórmula: objetivo da GAN</h3><p>Explique:</p><div class="formula">min<sub>G</sub> max<sub>D</sub> V(G,D)<br>V(G,D)=E<sub>x∼Pdata</sub>[log D(x)] + E<sub>z∼Pz</sub>[log(1−D(G(z)))]</div><div class="answer"><strong>Resposta modelo:</strong> O discriminador maximiza V classificando dados reais com D(x) próximo de 1 e dados gerados com D(G(z)) próximo de 0. O gerador minimiza V tentando produzir amostras que façam D(G(z)) se aproximar de 1. No equilíbrio, a distribuição gerada se aproxima da real e o discriminador não distingue as duas.</div></div>
+
+<div class="card question"><h3>Questão 3 — Pseudocódigo: PCA</h3><p>Escreva o pseudocódigo do PCA pelo método da covariância.</p><pre>Organizar os dados em uma matriz X
+Calcular a média de cada variável
+Subtrair a média de cada coluna de X
+Gerar a matriz centralizada B
+Calcular C = (1/(N−1)) BBᵀ
+Calcular autovalores e autovetores de C
+Ordenar autovetores pelos maiores autovalores
+Selecionar os L principais autovetores
+Projetar os dados no novo subespaço</pre><div class="answer"><strong>Resposta modelo:</strong> O PCA identifica as direções de maior variância. Os autovalores indicam quanta variância cada componente explica, e os autovetores indicam os novos eixos usados na projeção.</div></div>
+
+<div class="card question"><h3>Questão 4 — Comparação: SOM x K-means</h3><p>Compare SOM e K-means.</p><div class="answer"><strong>Resposta modelo:</strong> K-means particiona os dados em k grupos, atualizando centroides como médias dos grupos. SOM também usa protótipos, mas os organiza em uma estrutura topológica. Além do vencedor, seus vizinhos são atualizados. Assim, SOM preserva relações de vizinhança entre grupos, enquanto K-means foca apenas na partição por centroides.</div></div>
+
+<div class="card question"><h3>Questão 5 — Comparação: RNN simples, LSTM e NARX</h3><p>Compare os três modelos.</p><div class="answer"><strong>Resposta modelo:</strong> RNN simples usa realimentação para manter estado temporal, mas tem dificuldade com dependências longas. LSTM adiciona célula de memória e gates para controlar entrada, saída e esquecimento, lidando melhor com longo prazo. NARX é um modelo recorrente entrada-saída que usa atrasos explícitos das entradas exógenas e das saídas passadas para prever o próximo valor.</div></div>
+
+<div class="card question"><h3>Questão 6 — Fórmula: NARX</h3><p>Explique:</p><div class="formula">y(n+1)=F(y(n),...,y(n−q+1),u(n),...,u(n−q+1))</div><div class="answer"><strong>Resposta modelo:</strong> A saída futura é calculada por uma função não linear F que usa uma janela temporal com saídas passadas y e entradas externas u. O parâmetro q indica quantos atrasos são considerados. Assim, o modelo combina informação autorregressiva e entradas exógenas.</div></div>
+
+<div class="card question"><h3>Questão 7 — Comparação: sigmoide, tanh e ReLU</h3><p>Compare as três funções de ativação.</p><div class="answer"><strong>Resposta modelo:</strong> Sigmoide produz valores entre 0 e 1, útil para interpretação probabilística, mas satura. Tanh produz valores entre −1 e 1, sendo centrada em zero, mas também satura. ReLU é max(0,x), simples e eficiente, reduz saturação para valores positivos e gera ativações esparsas, mas pode zerar neurônios para entradas negativas.</div></div>
+
+<div class="card question"><h3>Questão 8 — Pseudocódigo: K-means para centros RBF</h3><p>Escreva pseudocódigo para escolher centros de uma RBF com K-means.</p><pre>Escolher número de centros H
+Inicializar H centroides aleatoriamente
+Enquanto os centroides mudarem:
+    Para cada padrão de treinamento:
+        Calcular distância até cada centro
+        Atribuir o padrão ao centro mais próximo
+    Para cada grupo:
+        Recalcular o centro como média dos padrões do grupo
+Fim
+Usar os centroides finais como centros RBF
+Calcular as larguras dos campos receptivos
+Treinar os pesos da camada de saída</pre><div class="answer"><strong>Resposta modelo:</strong> K-means encontra protótipos representativos dos dados. Esses protótipos viram centros das funções RBF. Depois calculam-se as larguras e ajustam-se os pesos da camada de saída.</div></div>
+</section></main></body></html>
