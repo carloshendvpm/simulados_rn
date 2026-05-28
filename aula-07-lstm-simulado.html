@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 07 — Memória de Curto Prazo Longa / LSTM</title>
+<style>
+:root{--bg:#f7f7f4;--paper:#fff;--ink:#1f2937;--muted:#667085;--brand:#8b0000;--brand2:#b42318;--border:#e5e7eb;--fall:#fff3cd;--dec:#e9f5ff;--ent:#eef8ee;--warn:#fff1f3;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.6} .container{max-width:900px;margin:0 auto;padding:32px 18px 64px}.paper{background:var(--paper);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 8px 24px rgba(0,0,0,.06)} h1{font-size:2.1rem;color:var(--brand);line-height:1.15;margin:0 0 8px} h2{color:var(--brand);border-top:2px solid var(--border);padding-top:24px;margin-top:34px} h3{color:#344054;margin-top:22px}.meta{color:var(--muted);margin-bottom:22px}.tag{display:inline-block;background:#fee4e2;color:#912018;padding:4px 9px;border-radius:999px;font-weight:bold;font-size:.82rem;margin:4px 4px 4px 0}.card{border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 0;background:#fff}.likely{border-left:6px solid #f79009;background:var(--fall)}.memorize{border-left:6px solid #1570ef;background:var(--dec)}.understand{border-left:6px solid #12b76a;background:var(--ent)}.warn{border-left:6px solid #e11d48;background:var(--warn)}.question{border-left:5px solid var(--brand2);background:#fffafa}.answer{background:#f9fafb;border-left:4px solid #98a2b3;padding:12px 14px;border-radius:8px;margin-top:10px} table{width:100%;border-collapse:collapse;margin:14px 0;overflow:auto} th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top} th{background:#f2f4f7} code,pre{background:#f2f4f7;border-radius:8px} pre{padding:14px;white-space:pre-wrap;overflow:auto}.toc{background:#f9fafb;border:1px solid var(--border);padding:16px;border-radius:12px}.toc a{color:var(--brand);text-decoration:none}.formula{font-family:Georgia,serif;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin:10px 0}.small{font-size:.92rem;color:var(--muted)} .lesson-list{list-style:none;padding:0}.lesson-list li{background:#fff;border:1px solid var(--border);border-radius:14px;margin:12px 0;padding:16px}.lesson-list a{font-size:1.1rem;font-weight:bold;color:var(--brand);text-decoration:none}.status{display:inline-block;font-size:.8rem;background:#ecfdf3;color:#027a48;border-radius:999px;padding:3px 8px;margin-left:6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pill{display:inline-block;background:#f2f4f7;border:1px solid var(--border);border-radius:999px;padding:2px 8px;margin:2px;font-size:.85rem}@media(max-width:700px){.grid{grid-template-columns:1fr}.paper{padding:22px}} @media print{body{background:white}.container{padding:0}.paper{box-shadow:none;border:0;border-radius:0} a{color:inherit;text-decoration:none}.card{break-inside:avoid} h2{break-after:avoid}}
+</style>
+</head>
+<body>
+<main class="container"><section class="paper">
+<h1>Aula 07 — Memória de Curto Prazo Longa / LSTM</h1>
+<p class="meta">Simulado e página de estudo gerados a partir do slide RN-07-deep-learning-modelo-03-LSTM.pdf.</p>
+<div class="toc"><strong>Roteiro:</strong> <a href="#resumo">Resumo</a> · <a href="#conceitos">Conceitos</a> · <a href="#formulas">Fórmulas</a> · <a href="#comparacoes">Comparações</a> · <a href="#questoes">Questões</a> · <a href="#simulado">Mini-simulado</a> · <a href="#gabarito">Gabarito</a></div>
+
+<h2 id="resumo">1. Resumo essencial</h2>
+<p>Esta aula apresenta a <strong>Memória de Curto Prazo Longa</strong>, ou <strong>LSTM</strong>, como uma variação de redes neurais recorrentes projetada para lidar melhor com sequências e dependências de longo prazo. O problema de fundo é que, em redes profundas e RNNs simples, os gradientes são multiplicados repetidamente ao longo das camadas ou do tempo. Isso pode produzir <strong>gradiente desaparecendo</strong> ou <strong>gradiente explodindo</strong>, dificultando o treinamento e impedindo que a rede aprenda relações distantes na sequência.</p>
+<div class="card likely"><strong>Provável de cair:</strong> explique por que LSTM foi proposta, quais são seus três gates e como eles ajudam a manter, esquecer ou expor informações ao longo do tempo.</div>
+
+<h2 id="conceitos">2. Conceitos principais que podem cair</h2>
+<ul>
+<li><strong>Gradiente desaparecendo:</strong> ocorre quando produtos sucessivos de derivadas pequenas fazem o gradiente ficar quase zero nas camadas ou passos temporais mais antigos.</li>
+<li><strong>Gradiente explodindo:</strong> ocorre quando produtos sucessivos de termos maiores que 1 fazem o gradiente crescer demais.</li>
+<li><strong>RNN:</strong> rede com realimentação temporal, em que o estado escondido atual depende da entrada atual e do estado anterior.</li>
+<li><strong>Pesos compartilhados no tempo:</strong> a RNN usa os mesmos pesos para todos os passos temporais, reduzindo complexidade.</li>
+<li><strong>LSTM:</strong> tipo de RNN que usa célula de memória e gates para controlar o fluxo de informação.</li>
+<li><strong>Dependência de longo prazo:</strong> capacidade de usar informações que ocorreram muitos passos temporais antes.</li>
+<li><strong>Estado da célula C<sub>t</sub>:</strong> caminho principal de memória da LSTM.</li>
+<li><strong>Estado escondido h<sub>t</sub>:</strong> saída da célula naquele passo temporal.</li>
+</ul>
+
+<div class="card memorize"><strong>Decorar:</strong> a LSTM padrão possui <strong>célula</strong>, <strong>gate de entrada</strong>, <strong>gate de saída</strong> e <strong>gate de esquecimento</strong>. Os gates usam geralmente sigmoid para produzir valores entre 0 e 1.</div>
+<div class="card understand"><strong>Entender:</strong> o valor 0 em um gate bloqueia informação; o valor 1 permite passagem quase total. Por isso os gates funcionam como “válvulas” de informação.</div>
+
+<h2>3. Detalhes “bobos” que o professor pode cobrar</h2>
+<ul>
+<li>LSTM significa <em>Long Short-Term Memory</em>, traduzida no slide como <strong>Memória de Curto Prazo Longa</strong>.</li>
+<li>Uma LSTM pode aprender dependências com intervalos superiores a 1.000 passos de tempo, segundo o slide.</li>
+<li>O <strong>gate de esquecimento</strong> foi proposto por Gers et al. (2000).</li>
+<li>A célula armazena valores por intervalos de tempo arbitrários.</li>
+<li>A saída do gate de esquecimento multiplica o estado anterior da célula.</li>
+<li>Aplicações citadas: reconhecimento de fala, tradução automática, Alexa, Facebook, AlphaStar, séries temporais, análise de sentimentos, legendagem e visão computacional.</li>
+<li>Frameworks citados: TensorFlow, Keras e PyTorch.</li>
+</ul>
+
+<h2 id="formulas">4. Fórmulas importantes</h2>
+<div class="formula"><strong>RNN simples:</strong><br>h(t) = f<sub>h</sub>(W<sub>h</sub> · h(t−1) + W<sub>x</sub> · x(t))</div>
+<p><strong>Termos:</strong> h(t) é o estado escondido atual; h(t−1) é o estado anterior; x(t) é a entrada atual; W<sub>h</sub> e W<sub>x</sub> são pesos compartilhados no tempo; f<sub>h</sub> é uma função não linear, como ReLU ou tanh.</p>
+
+<div class="formula"><strong>Gate de esquecimento:</strong><br>f<sub>t</sub> = σ(W<sub>f</sub>[h<sub>t−1</sub>, x<sub>t</sub>] + b<sub>f</sub>)</div>
+<p>Decide quanto do estado anterior C<sub>t−1</sub> será preservado. Saída próxima de 0 significa esquecer; próxima de 1 significa manter.</p>
+
+<div class="formula"><strong>Gate de entrada e estado candidato:</strong><br>i<sub>t</sub> = σ(W<sub>i</sub>[h<sub>t−1</sub>, x<sub>t</sub>] + b<sub>i</sub>)<br>Ĉ<sub>t</sub> = tanh(W<sub>C</sub>[h<sub>t−1</sub>, x<sub>t</sub>] + b<sub>C</sub>)</div>
+<p>O gate de entrada decide quais informações novas entram na célula. O estado candidato Ĉ<sub>t</sub> representa o novo conteúdo possível a ser adicionado.</p>
+
+<div class="formula"><strong>Atualização do estado da célula:</strong><br>C<sub>t</sub> = f<sub>t</sub> * C<sub>t−1</sub> + i<sub>t</sub> * Ĉ<sub>t</sub></div>
+<p>Combina memória antiga filtrada pelo esquecimento com nova informação filtrada pelo gate de entrada.</p>
+
+<div class="formula"><strong>Gate de saída e estado escondido:</strong><br>o<sub>t</sub> = σ(W<sub>o</sub>[h<sub>t−1</sub>, x<sub>t</sub>] + b<sub>o</sub>)<br>h<sub>t</sub> = o<sub>t</sub> * tanh(C<sub>t</sub>)</div>
+<p>O gate de saída decide qual parte do estado da célula será exposta como saída/estado escondido atual.</p>
+
+<h2>5. Funções de ativação citadas</h2>
+<table>
+<tr><th>Função</th><th>Fórmula</th><th>Intervalo</th><th>Uso na LSTM</th><th>Vantagem</th><th>Desvantagem</th></tr>
+<tr><td>Sigmoide logística</td><td>σ(x)</td><td>0 a 1</td><td>Gates de esquecimento, entrada e saída</td><td>Interpretação como controle de passagem</td><td>Pode saturar e gerar gradientes pequenos</td></tr>
+<tr><td>Tangente hiperbólica</td><td>tanh(x)</td><td>−1 a 1</td><td>Estado candidato e filtragem do estado da célula</td><td>Centralizada em zero</td><td>Também pode saturar</td></tr>
+<tr><td>ReLU</td><td>max(0,x)</td><td>0 a ∞</td><td>Citada como exemplo de não linearidade em RNN</td><td>Simples e reduz saturação positiva</td><td>Pode zerar unidades para entradas negativas</td></tr>
+</table>
+
+<h2 id="comparacoes">6. Comparações importantes</h2>
+<table>
+<tr><th>Tema</th><th>RNN simples</th><th>LSTM</th></tr>
+<tr><td>Memória</td><td>Estado escondido recorrente</td><td>Estado escondido + estado de célula</td></tr>
+<tr><td>Dependências longas</td><td>Difícil por gradientes desaparecendo/explodindo</td><td>Mais adequada por célula e gates</td></tr>
+<tr><td>Controle de informação</td><td>Menos explícito</td><td>Gate de entrada, saída e esquecimento</td></tr>
+<tr><td>Custo computacional</td><td>Menor</td><td>Maior, pois há muitos parâmetros</td></tr>
+<tr><td>Treinamento</td><td>BPTT simples</td><td>BPTT com mais parâmetros; pode usar SGD, Nesterov, Adagrad, AdaDelta, RMSProp e Adam</td></tr>
+</table>
+
+<h2 id="questoes">7. Possíveis questões de prova e respostas modelo</h2>
+<div class="card question"><strong>Q1.</strong> Por que RNNs simples têm dificuldade para aprender dependências de longa distância?</div>
+<div class="answer">Porque, ao aplicar retropropagação ao longo do tempo, o gradiente passa por muitos produtos de derivadas. Se esses termos forem pequenos, o gradiente desaparece; se forem maiores que 1, pode explodir. Assim, passos temporais antigos recebem pouca ou instável informação de erro, dificultando aprender relações distantes.</div>
+<div class="card question"><strong>Q2.</strong> Explique a função dos três gates de uma LSTM.</div>
+<div class="answer">O gate de esquecimento decide quanto do estado anterior da célula será mantido. O gate de entrada decide quais informações novas devem atualizar a célula. O gate de saída decide qual parte do estado da célula será exposta como estado escondido ou saída atual.</div>
+<div class="card question"><strong>Q3.</strong> Por que a LSTM é mais custosa que uma RNN simples?</div>
+<div class="answer">Porque cada célula LSTM possui vários conjuntos de parâmetros, como Wf, Wi, WC e Wo, associados aos gates e ao estado candidato. Isso exige mais dados, mais processamento e geralmente mais tempo de treinamento.</div>
+
+<h2>8. Pseudocódigo — passo para frente de uma célula LSTM</h2>
+<pre>Entrada: x_t, estado escondido anterior h_{t-1}, estado da célula anterior C_{t-1}
+1. Calcular gate de esquecimento f_t
+2. Calcular gate de entrada i_t
+3. Calcular estado candidato Ĉ_t
+4. Atualizar estado da célula C_t
+5. Calcular gate de saída o_t
+6. Calcular estado escondido atual h_t
+Saída: h_t e C_t</pre>
+<h3>Explicação linha por linha</h3>
+<ol>
+<li><strong>f<sub>t</sub>:</strong> define quanto da memória antiga será esquecida ou preservada.</li>
+<li><strong>i<sub>t</sub>:</strong> define quanto da informação nova poderá entrar.</li>
+<li><strong>Ĉ<sub>t</sub>:</strong> cria uma proposta de novo conteúdo para a célula.</li>
+<li><strong>C<sub>t</sub>:</strong> combina memória antiga filtrada e nova memória filtrada.</li>
+<li><strong>o<sub>t</sub>:</strong> decide o que será mostrado para fora da célula.</li>
+<li><strong>h<sub>t</sub>:</strong> produz o estado escondido atual, usado como saída e como entrada do próximo passo.</li>
+</ol>
+
+<h2 id="simulado">9. Mini-simulado</h2>
+<div class="card question"><strong>1.</strong> Defina LSTM e explique qual problema ela busca resolver.</div>
+<div class="card question"><strong>2.</strong> Explique a diferença entre C<sub>t</sub> e h<sub>t</sub>.</div>
+<div class="card question"><strong>3.</strong> O que significa dizer que os pesos de uma RNN são compartilhados no tempo?</div>
+<div class="card question"><strong>4.</strong> Compare RNN simples e LSTM quanto à capacidade de lidar com dependências longas.</div>
+<div class="card question"><strong>5.</strong> Escreva o pseudocódigo do funcionamento de uma célula LSTM em um passo temporal.</div>
+
+<h2 id="gabarito">10. Gabarito comentado</h2>
+<ol>
+<li>LSTM é uma RNN com célula de memória e gates, criada para lidar melhor com dependências temporais longas e reduzir problemas de gradiente desaparecendo/explodindo.</li>
+<li>C<sub>t</sub> é o estado interno de memória da célula; h<sub>t</sub> é a saída/estado escondido que será usado externamente e no próximo passo.</li>
+<li>Significa que a mesma função e os mesmos pesos são usados em todos os passos da sequência.</li>
+<li>RNN simples tende a perder informação antiga; LSTM controla memória com gates, preservando informações relevantes por mais tempo.</li>
+<li>Calcular f<sub>t</sub>, i<sub>t</sub>, Ĉ<sub>t</sub>, C<sub>t</sub>, o<sub>t</sub> e h<sub>t</sub>, nessa ordem lógica.</li>
+</ol>
+
+</section></main>
+</body>
+</html>

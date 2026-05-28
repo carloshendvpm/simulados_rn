@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula 07 — Rede Adversária Generativa / GAN</title>
+<style>
+:root{--bg:#f7f7f4;--paper:#fff;--ink:#1f2937;--muted:#667085;--brand:#8b0000;--brand2:#b42318;--border:#e5e7eb;--fall:#fff3cd;--dec:#e9f5ff;--ent:#eef8ee;--warn:#fff1f3;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.6} .container{max-width:900px;margin:0 auto;padding:32px 18px 64px}.paper{background:var(--paper);border:1px solid var(--border);border-radius:18px;padding:34px;box-shadow:0 8px 24px rgba(0,0,0,.06)} h1{font-size:2.1rem;color:var(--brand);line-height:1.15;margin:0 0 8px} h2{color:var(--brand);border-top:2px solid var(--border);padding-top:24px;margin-top:34px} h3{color:#344054;margin-top:22px}.meta{color:var(--muted);margin-bottom:22px}.tag{display:inline-block;background:#fee4e2;color:#912018;padding:4px 9px;border-radius:999px;font-weight:bold;font-size:.82rem;margin:4px 4px 4px 0}.card{border:1px solid var(--border);border-radius:14px;padding:18px;margin:16px 0;background:#fff}.likely{border-left:6px solid #f79009;background:var(--fall)}.memorize{border-left:6px solid #1570ef;background:var(--dec)}.understand{border-left:6px solid #12b76a;background:var(--ent)}.warn{border-left:6px solid #e11d48;background:var(--warn)}.question{border-left:5px solid var(--brand2);background:#fffafa}.answer{background:#f9fafb;border-left:4px solid #98a2b3;padding:12px 14px;border-radius:8px;margin-top:10px} table{width:100%;border-collapse:collapse;margin:14px 0;overflow:auto} th,td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top} th{background:#f2f4f7} code,pre{background:#f2f4f7;border-radius:8px} pre{padding:14px;white-space:pre-wrap;overflow:auto}.toc{background:#f9fafb;border:1px solid var(--border);padding:16px;border-radius:12px}.toc a{color:var(--brand);text-decoration:none}.formula{font-family:Georgia,serif;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin:10px 0}.small{font-size:.92rem;color:var(--muted)} .lesson-list{list-style:none;padding:0}.lesson-list li{background:#fff;border:1px solid var(--border);border-radius:14px;margin:12px 0;padding:16px}.lesson-list a{font-size:1.1rem;font-weight:bold;color:var(--brand);text-decoration:none}.status{display:inline-block;font-size:.8rem;background:#ecfdf3;color:#027a48;border-radius:999px;padding:3px 8px;margin-left:6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pill{display:inline-block;background:#f2f4f7;border:1px solid var(--border);border-radius:999px;padding:2px 8px;margin:2px;font-size:.85rem}@media(max-width:700px){.grid{grid-template-columns:1fr}.paper{padding:22px}} @media print{body{background:white}.container{padding:0}.paper{box-shadow:none;border:0;border-radius:0} a{color:inherit;text-decoration:none}.card{break-inside:avoid} h2{break-after:avoid}}
+</style>
+</head>
+<body>
+<main class="container"><section class="paper">
+<h1>Aula 07 — Rede Adversária Generativa / GAN</h1>
+<p class="meta">Simulado e página de estudo gerados a partir do slide RN-07-deep-learning-modelo-04-GAN.pdf.</p>
+<div class="toc"><strong>Roteiro:</strong> <a href="#resumo">Resumo</a> · <a href="#conceitos">Conceitos</a> · <a href="#formulas">Fórmulas</a> · <a href="#comparacoes">Comparações</a> · <a href="#questoes">Questões</a> · <a href="#simulado">Mini-simulado</a> · <a href="#gabarito">Gabarito</a></div>
+
+<h2 id="resumo">1. Resumo essencial</h2>
+<p>Esta aula apresenta <strong>Redes Adversárias Generativas</strong>, ou <strong>GANs</strong>, modelos generativos formados por duas redes neurais em competição: o <strong>gerador</strong> e o <strong>discriminador</strong>. O gerador tenta produzir amostras sintéticas parecidas com dados reais, enquanto o discriminador tenta distinguir dados reais de dados gerados. O treinamento é formulado como um jogo MinMax, no qual o discriminador maximiza sua capacidade de classificação e o gerador minimiza a capacidade do discriminador de perceber a falsificação.</p>
+<div class="card likely"><strong>Provável de cair:</strong> explique o papel do gerador e do discriminador, a ideia de jogo de soma zero/MinMax e o equilíbrio em que P<sub>data</sub> = P<sub>G</sub> e D(x) = 1/2.</div>
+
+<h2 id="conceitos">2. Conceitos principais que podem cair</h2>
+<ul>
+<li><strong>Modelo generativo:</strong> aprende uma distribuição de dados para gerar novas amostras.</li>
+<li><strong>Modelo discriminativo:</strong> dado x, determina uma resposta y ou estima p(y|x).</li>
+<li><strong>GAN:</strong> rede generativa adversária com gerador e discriminador competindo.</li>
+<li><strong>Gerador G:</strong> recebe ruído z e produz uma amostra artificial G(z).</li>
+<li><strong>Discriminador D:</strong> recebe dados reais x ou gerados G(z) e estima se são reais ou falsos.</li>
+<li><strong>Variável latente z:</strong> ruído aleatório, geralmente Gaussiano ou uniforme, usado como entrada do gerador.</li>
+<li><strong>Distribuição P<sub>data</sub>:</strong> distribuição dos dados reais.</li>
+<li><strong>Distribuição P<sub>G</sub>:</strong> distribuição induzida pelo gerador.</li>
+<li><strong>Equilíbrio de Nash:</strong> situação ideal em que o gerador imita os dados reais e o discriminador não consegue distinguir, produzindo D(x)=1/2.</li>
+</ul>
+
+<div class="card memorize"><strong>Decorar:</strong> GAN = <strong>Generativa</strong> porque aprende a distribuição dos dados; <strong>Adversária</strong> porque duas redes competem; <strong>Rede</strong> porque usa redes neurais profundas.</div>
+<div class="card understand"><strong>Entender:</strong> a GAN não recebe simplesmente um rótulo para aprender uma classe. Ela aprende a gerar dados parecidos com os reais por meio da competição entre G e D.</div>
+
+<h2>3. Detalhes “bobos” que podem cair</h2>
+<ul>
+<li>GAN foi proposta por Goodfellow et al. (2014).</li>
+<li>O discriminador é frequentemente um classificador binário.</li>
+<li>O discriminador pode ser tipicamente uma CNN em tarefas de imagem.</li>
+<li>GANs originalmente empregam aprendizagem não supervisionada, mas há variações semi-supervisionadas, supervisionadas e por reforço.</li>
+<li>A qualidade do modelo pode ser avaliada comparando exemplos gerados com dados reais.</li>
+<li>Aplicações citadas: geração de imagens, tradução imagem-imagem, super-resolução, envelhecimento facial, texto para imagem, aumento de dados, séries temporais e detecção de anomalias.</li>
+<li>Softwares citados: GAN Lab, TF-GAN, Keras GAN, DCGAN TensorFlow e Wasserstein GAN.</li>
+</ul>
+
+<h2 id="formulas">4. Fórmulas importantes</h2>
+<div class="formula"><strong>Máxima verossimilhança em modelos generativos:</strong><br>θ* = arg max<sub>θ</sub> Σ log p(x<sup>i</sup>|θ)</div>
+<p>Escolhe-se uma família parametrizada p(x|θ) e aprende-se θ maximizando a probabilidade dos dados observados.</p>
+
+<div class="formula"><strong>Modelo com variável latente:</strong><br>θ* = arg max<sub>θ</sub> Σ log ∫ p(x<sup>i</sup>, z<sup>i</sup>|θ) dz</div>
+<p>Quando há variável latente z, a distribuição conjunta é marginalizada para avaliar a probabilidade de x.</p>
+
+<div class="formula"><strong>Kullback-Leibler:</strong><br>D<sub>KL</sub>(P||Q) = Σ p(x) log(p(x)/q(x))</div>
+<p>Mede diferença de informação entre duas distribuições. O slide destaca que a KLD <strong>não é simétrica</strong>.</p>
+
+<div class="formula"><strong>Jensen-Shannon:</strong><br>JSD(P||Q)= 1/2[D<sub>KL</sub>(P||M)+D<sub>KL</sub>(Q||M)], onde M=(P+Q)/2</div>
+<p>É uma medida simétrica de similaridade entre distribuições. A raiz quadrada da JSD é chamada de distância de Jensen-Shannon.</p>
+
+<div class="formula"><strong>Função MinMax da GAN:</strong><br>min<sub>G</sub> max<sub>D</sub> V(G,D) = E<sub>x~Pdata</sub>[log D(x)] + E<sub>z~PG</sub>[log(1 − D(G(z)))]</div>
+<p>O discriminador tenta maximizar V, classificando reais como reais e gerados como falsos. O gerador tenta minimizar V, fazendo D(G(z)) se aproximar de real.</p>
+
+<div class="formula"><strong>Nova função de custo para o gerador:</strong><br>min<sub>G</sub> V(G,D) = E<sub>z~PG</sub>[−log D(G(z))]</div>
+<p>O slide apresenta essa alternativa para reduzir o problema de gradiente que desaparece quando o discriminador fica bom demais no início do treinamento.</p>
+
+<h2 id="comparacoes">5. Comparações importantes</h2>
+<table>
+<tr><th>Aspecto</th><th>Modelo discriminativo</th><th>Modelo generativo</th></tr>
+<tr><td>Objetivo</td><td>Predizer y dado x</td><td>Modelar p(x) ou p(x,y)</td></tr>
+<tr><td>Probabilidade típica</td><td>p(y|x)</td><td>p(x) ou p(x,y)</td></tr>
+<tr><td>Gera novos dados?</td><td>Não, em geral</td><td>Sim</td></tr>
+<tr><td>Exemplo na aula</td><td>Discriminador da GAN</td><td>Gerador da GAN</td></tr>
+</table>
+<table>
+<tr><th>Elemento da GAN</th><th>Entrada</th><th>Saída</th><th>Objetivo</th></tr>
+<tr><td>Gerador G</td><td>Ruído z</td><td>Amostra gerada G(z)</td><td>Enganar o discriminador</td></tr>
+<tr><td>Discriminador D</td><td>x real ou G(z)</td><td>Probabilidade de ser real</td><td>Distinguir real de falso</td></tr>
+</table>
+<table>
+<tr><th>Métrica</th><th>Característica</th><th>Observação</th></tr>
+<tr><td>KLD</td><td>Não simétrica</td><td>D<sub>KL</sub>(P||Q) pode ser diferente de D<sub>KL</sub>(Q||P)</td></tr>
+<tr><td>JSD</td><td>Simétrica e finita</td><td>Compara distribuições sem depender de qual é a referência</td></tr>
+</table>
+
+<h2>6. Limitações das GANs</h2>
+<ul>
+<li><strong>Gradiente que desaparece:</strong> ocorre quando o discriminador fica bom demais e não fornece sinal útil ao gerador.</li>
+<li><strong>Ausência de convergência:</strong> gerador e discriminador podem oscilar sem atingir equilíbrio.</li>
+<li><strong>Colapso de modo:</strong> o gerador passa a produzir apenas um pequeno conjunto de exemplos.</li>
+<li><strong>Queda de distribuição:</strong> o gerador não cobre toda a distribuição dos dados reais.</li>
+</ul>
+<div class="card warn"><strong>Atenção:</strong> o professor pode pedir “problemas de GAN e tratamentos”. O slide cita mudança de objetivos, limitação do discriminador e agendamento/balanceamento da aprendizagem de D e G.</div>
+
+<h2>7. Extensões citadas</h2>
+<ul>
+<li><strong>GAN Vanilla:</strong> modelo básico, com G e D.</li>
+<li><strong>InfoGAN:</strong> busca representações interpretáveis maximizando informação mútua entre variáveis latentes e observações.</li>
+<li><strong>cGAN:</strong> GAN condicional; gerador e discriminador são condicionados a informação auxiliar, como rótulos.</li>
+<li><strong>ACGAN:</strong> gerador recebe ponto latente e rótulo; discriminador avalia a imagem e produz probabilidade de ser real.</li>
+</ul>
+
+<h2 id="questoes">8. Possíveis questões de prova e respostas modelo</h2>
+<div class="card question"><strong>Q1.</strong> Explique a diferença entre modelos generativos e discriminativos.</div>
+<div class="answer">Modelos discriminativos estimam uma saída y dado x, geralmente p(y|x), e não modelam diretamente p(x). Modelos generativos aprendem a distribuição dos dados, como p(x) ou p(x,y), e podem gerar novas amostras semelhantes aos dados de treinamento.</div>
+<div class="card question"><strong>Q2.</strong> Explique a arquitetura geral de uma GAN.</div>
+<div class="answer">Uma GAN possui um gerador G, que recebe ruído z e gera uma amostra artificial G(z), e um discriminador D, que recebe amostras reais x e geradas G(z) e tenta classificá-las como reais ou falsas. As duas redes competem durante o treinamento.</div>
+<div class="card question"><strong>Q3.</strong> O que significa o equilíbrio de Nash em uma GAN?</div>
+<div class="answer">É a situação em que a distribuição gerada pelo gerador se iguala à distribuição real dos dados, Pdata = PG. Nesse ponto, o discriminador não consegue diferenciar real de falso e sua saída ideal é D(x)=1/2.</div>
+
+<h2>9. Pseudocódigo — treinamento simplificado de GAN</h2>
+<pre>Entrada: dados reais, distribuição de ruído, taxa de aprendizagem
+1. Inicializar parâmetros θd do discriminador e θg do gerador
+2. Repetir durante o treinamento:
+   2.1 Amostrar exemplos reais x da distribuição dos dados
+   2.2 Amostrar ruídos z da distribuição a priori
+   2.3 Gerar exemplos falsos x* = G(z)
+   2.4 Atualizar θd para melhorar a distinção entre x e x*
+   2.5 Amostrar novos ruídos z
+   2.6 Gerar novos exemplos falsos G(z)
+   2.7 Atualizar θg para enganar melhor o discriminador
+Saída: gerador capaz de produzir amostras semelhantes às reais</pre>
+<h3>Explicação linha por linha</h3>
+<ol>
+<li>Inicializa as duas redes antes da competição.</li>
+<li>Repete o jogo adversarial várias vezes.</li>
+<li>Usa dados reais para ensinar o discriminador o que deve ser reconhecido como verdadeiro.</li>
+<li>Usa ruído para criar entradas do gerador.</li>
+<li>O gerador transforma ruído em amostras sintéticas.</li>
+<li>O discriminador é ajustado por gradiente ascendente, tentando maximizar sua recompensa.</li>
+<li>O gerador é ajustado por gradiente descendente, tentando minimizar a capacidade do discriminador de detectar falsos.</li>
+</ol>
+
+<h2 id="simulado">10. Mini-simulado</h2>
+<div class="card question"><strong>1.</strong> O que é uma GAN e por que ela é chamada de adversária?</div>
+<div class="card question"><strong>2.</strong> Diferencie gerador e discriminador.</div>
+<div class="card question"><strong>3.</strong> Explique KLD e JSD, destacando a diferença de simetria.</div>
+<div class="card question"><strong>4.</strong> Compare GAN Vanilla e cGAN.</div>
+<div class="card question"><strong>5.</strong> Escreva o pseudocódigo do treinamento alternado entre D e G.</div>
+
+<h2 id="gabarito">11. Gabarito comentado</h2>
+<ol>
+<li>GAN é uma rede generativa formada por duas redes em competição. É adversária porque G e D têm objetivos opostos.</li>
+<li>O gerador recebe z e cria G(z); o discriminador recebe dados reais ou gerados e estima se são reais.</li>
+<li>KLD mede divergência mas não é simétrica; JSD usa uma média M e é simétrica e finita.</li>
+<li>GAN Vanilla é o modelo básico; cGAN condiciona geração e discriminação a informação auxiliar, como rótulos.</li>
+<li>Inicializar G e D, amostrar reais e ruído, gerar falsos, atualizar D, depois atualizar G para enganar D.</li>
+</ol>
+
+</section></main>
+</body>
+</html>
